@@ -64,7 +64,7 @@ public class BaseInterceptor implements Interceptor {
 		return invocation.proceed();
 	}
 	
-	private MapperMethodMeta getMapperMeate(Configuration configuration, String fullMapperMethodName){
+	private MapperMethodMeta getMapperMeta(Configuration configuration, String fullMapperMethodName){
 		return MAPPER_METHOD_META_CACHE.computeIfAbsent(fullMapperMethodName, key -> {
 			int lastIndex = key.lastIndexOf(".");
 			String mapperClassName = key.substring(0, lastIndex);
