@@ -12,6 +12,7 @@ import java.util.Properties;
 
 /**
  * @author doggy1853
+ * 支持参数
  */
 @Intercepts({
 	@Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
@@ -23,6 +24,7 @@ public class BaseInterceptor implements Interceptor {
 		Object[] args = invocation.getArgs();
 		if(target instanceof Executor){
 			MappedStatement mappedStatement = (MappedStatement) args[0];
+			mappedStatement.getResultMaps();
 			args[1] = "test";
 		}
 		return invocation.proceed();
