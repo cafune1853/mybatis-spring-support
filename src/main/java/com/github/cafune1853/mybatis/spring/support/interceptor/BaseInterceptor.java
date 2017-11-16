@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.github.cafune1853.mybatis.spring.support.provider.CrudProvider;
 import com.github.cafune1853.mybatis.spring.support.util.PersistenceEntityMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
@@ -39,7 +40,7 @@ import javax.persistence.Id;
 @Intercepts({
 	@Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
 	@Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})})
-public class BaseInterceptor implements Interceptor {
+public class BaseInterceptor extends AbstractInterceptor implements Interceptor {
 	/**
 	 * Mapper方法的全路径到其元数据的缓存。
 	 */
@@ -50,18 +51,36 @@ public class BaseInterceptor implements Interceptor {
 	 */
 	private static final Map<Class<?>, Class<?>> MAPPER_CLASS_ENTITY_CLASS_CACHE = new ConcurrentHashMap<>();
 	private static final String DYNAMIC_GENERATE_MAPPER_ID_SUFFIX = ".GeneratedMapperIdSuffix";
-	private static final ReflectorFactory REFLECTOR_FACTORY = new DefaultReflectorFactory();
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {
 		Object target = invocation.getTarget();
 		Object[] args = invocation.getArgs();
 		if(target instanceof Executor){
 			MappedStatement mappedStatement = (MappedStatement) args[0];
-			//fullPath即为方法路径
-			String fullPath = mappedStatement.getId();
+			MapperMethodMeta mapperMethodMeta = getMapperMeta(mappedStatement.getConfiguration(), mappedStatement.getId());
+			if(mapperMethodMeta.isAppendClazzAsArg()){
+				Object arg = args[1];
+				if(arg != null){
+					Map<String, Object> argMap = null;
+					if(arg instanceof Map){
+						argMap = (Map<String,Object>)arg;
+						argMap.put(CrudProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+					}else{
+						argMap.put(CrudProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+						argMap.put(CrudProvider.PARAM_KEY, arg);
+					}
+					args[1] = argMap;
+				}else {
+					args[1] = mapperMethodMeta.getEntityClazz();
+				}
+			}
 			
-			Object arg = args[1];
-			args[1] = "test";
+			if(mapperMethodMeta.isResultMapWithJpa()){
+				//TODO: rewrite resultMap
+			}
+			
+			
+			
 		}
 		return invocation.proceed();
 	}
