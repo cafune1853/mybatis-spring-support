@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 是否将实体类从Mapper方法传递到相应的Provider中，具体的实体解析规则见{@link ResultMapWithJpa}
+ * 是否将实体类从Mapper方法传递到相应的Provider中，具体的实体解析规则见{@link AutoResultMap}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

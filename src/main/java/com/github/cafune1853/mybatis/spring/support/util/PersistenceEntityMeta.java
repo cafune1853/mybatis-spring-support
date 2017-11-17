@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -68,15 +67,9 @@ public class PersistenceEntityMeta {
         for (Class<?> curClazz = entityClazz; curClazz != Object.class; curClazz = curClazz.getSuperclass()) {
         	Field[] fields = curClazz.getDeclaredFields();
         	for (Field field:fields){
-        		if(!field.isAnnotationPresent(Transient.class) && ((field.getModifiers() & EXCLUDE_MODIFIERS) == 0)){
-        		    String columnName = null;
-        		    if(field.isAnnotationPresent(Column.class)){
-        		        columnName = field.getAnnotation(Column.class).name();
-                    }
-                    if(columnName == null || columnName.trim().isEmpty()){
-        		        columnName = field.getName();
-                    }
-                    columnName = StringUtil.camelCaseToUnderScore(columnName);
+                field.setAccessible(true);
+                if(!field.isAnnotationPresent(Transient.class) && ((field.getModifiers() & EXCLUDE_MODIFIERS) == 0)){
+        		    String columnName = StringUtil.camelCaseToUnderScore(field.getName());
                     columnFieldMap.putIfAbsent(columnName, field);
                     if(field.isAnnotationPresent(Id.class)){
                         idColumnName = columnName;

@@ -1,3 +1,5 @@
+package com.github.cafune1853.test;
+
 import javax.sql.DataSource;
 
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
@@ -30,7 +32,7 @@ public class Config {
     @Bean
     public static MapperScannerConfigurer scannerConfigurer() {
         MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
-        mapperScannerConfigurer.setBasePackage("com.github.cafune1853.mybatis.support.mapper");
+        mapperScannerConfigurer.setBasePackage("com.github.cafune1853.test.mapper");
         mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
         return mapperScannerConfigurer;
     }

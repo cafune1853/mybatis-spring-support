@@ -12,13 +12,13 @@ import org.apache.ibatis.mapping.ResultMap;
 final class MapperMethodMeta {
 	private final Class<?> entityClazz;
 	private final boolean appendClazzAsArg;
-	private final boolean resultMapWithJpa;
+	private final boolean autoResultMap;
 	private final List<ResultMap> resultMaps;
 	
-	public MapperMethodMeta(Class<?> entityClazz, boolean appendClazzAsArg, boolean resultMapWithJpa, List<ResultMap> resultMaps) {
+	public MapperMethodMeta(Class<?> entityClazz, boolean appendClazzAsArg, boolean autoResultMap, List<ResultMap> resultMaps) {
 		this.entityClazz = entityClazz;
 		this.appendClazzAsArg = appendClazzAsArg;
-		this.resultMapWithJpa = resultMapWithJpa;
+		this.autoResultMap = autoResultMap;
 		this.resultMaps = Collections.unmodifiableList(resultMaps);
 	}
 	
@@ -30,8 +30,8 @@ final class MapperMethodMeta {
 		return appendClazzAsArg;
 	}
 	
-	public boolean isResultMapWithJpa() {
-		return resultMapWithJpa;
+	public boolean isAutoResultMap() {
+		return autoResultMap;
 	}
 	
 	public List<ResultMap> getResultMaps() {

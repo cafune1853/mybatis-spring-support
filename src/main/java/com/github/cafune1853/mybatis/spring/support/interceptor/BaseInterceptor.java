@@ -18,15 +18,13 @@ import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.plugin.*;
-import org.apache.ibatis.reflection.DefaultReflectorFactory;
 import org.apache.ibatis.reflection.MetaClass;
-import org.apache.ibatis.reflection.ReflectorFactory;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 import com.github.cafune1853.mybatis.spring.support.annotation.AppendEntityClass;
-import com.github.cafune1853.mybatis.spring.support.annotation.ResultMapWithJpa;
+import com.github.cafune1853.mybatis.spring.support.annotation.AutoResultMap;
 import com.github.cafune1853.mybatis.spring.support.mapper.IBaseMapper;
 
 import javax.persistence.Id;
@@ -75,7 +73,7 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 				}
 			}
 			
-			if(mapperMethodMeta.isResultMapWithJpa()){
+			if(mapperMethodMeta.isAutoResultMap()){
 				//TODO: rewrite resultMap
 			}
 			
@@ -105,10 +103,10 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 		Class<?> entityClazz = null;
 		List<ResultMap> resultMaps = new ArrayList<>();
 		Method method = getMapperMethodByName(mapperClazz, mapperMethodName);
-		if(method.isAnnotationPresent(AppendEntityClass.class) || method.isAnnotationPresent(ResultMapWithJpa.class)){
+		if(method.isAnnotationPresent(AppendEntityClass.class) || method.isAnnotationPresent(AutoResultMap.class)){
 			appendClazzAsArg = true;
 			entityClazz = getEntityClassByMapperClass(mapperClazz);
-			if(method.isAnnotationPresent(ResultMapWithJpa.class)){
+			if(method.isAnnotationPresent(AutoResultMap.class)){
 				resultMapWithJpa = true;
 				String mapperId = mapperClassName + DYNAMIC_GENERATE_MAPPER_ID_SUFFIX;
 				if(configuration.hasResultMap(mapperId)){
@@ -130,7 +128,9 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 						builder.notNullColumns(new HashSet<>());
 						resultMappings.add(builder.build());
 					}
-					resultMaps.add(new ResultMap.Builder(configuration, mapperId, entityClazz, resultMappings).build());
+					ResultMap resultMap = new ResultMap.Builder(configuration, mapperId, entityClazz, resultMappings).build();
+					configuration.addResultMap(resultMap);
+					resultMaps.add(resultMap);
 				}
 			}
 		}
