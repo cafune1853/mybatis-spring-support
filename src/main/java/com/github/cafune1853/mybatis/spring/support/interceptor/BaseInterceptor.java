@@ -19,6 +19,7 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
 import org.apache.ibatis.plugin.*;
 import org.apache.ibatis.reflection.MetaClass;
+import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -74,11 +75,9 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 			}
 			
 			if(mapperMethodMeta.isAutoResultMap()){
-				//TODO: rewrite resultMap
+				MetaObject metaObject = getMetaObject(mappedStatement);
+				metaObject.setValue("resultMaps", mapperMethodMeta.getResultMaps());
 			}
-			
-			
-			
 		}
 		return invocation.proceed();
 	}
