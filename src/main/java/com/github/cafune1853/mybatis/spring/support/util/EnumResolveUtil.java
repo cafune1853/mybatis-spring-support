@@ -44,8 +44,8 @@ public class EnumResolveUtil {
 		return null;
 	}
 	
-	public static <E extends Enum<E>> RepresentFieldTypeValue getRepresentFieldTypeValue(Class<E> clazz, E enumValue){
-		EnumResolveData enumResolveData = getEnumResolveData(clazz);
+	public static <E extends Enum<E>> RepresentFieldTypeValue getRepresentFieldTypeValue(Class<E> enumClazz, E enumValue){
+		EnumResolveData enumResolveData = getEnumResolveData(enumClazz);
 		if(!enumResolveData.isHasRepresentField()){
 			throw new IllegalStateException(String.format("Enum class:%s should have a field annotated with EnumRepresentField.", enumClazz));
 		}
