@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import com.github.cafune1853.test.entity.Person;
 
 public interface PersonDao {
-    @Insert("INSERT INTO `person`(`name`, `age`) VALUES(#{person.nameC}, #{person.age})")
+    @Insert("INSERT INTO `person`(`name`, `age`, `sex_enum`) VALUES(#{person.name}, #{person.age}, #{person.sexEnum})")
     long add(@Param("person") Person person);
 
     @Select("SELECT * FROM `person` WHERE `id` = #{id}")

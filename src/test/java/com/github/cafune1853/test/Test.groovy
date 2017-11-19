@@ -13,8 +13,9 @@ class Test extends Specification {
 
     def "PersonDao#add"() {
         Person person = new Person()
-        person.setNameC("doggy")
+        person.setName("doggy")
         person.setAge(23)
+        person.setSexEnum(SexEnum.MALE)
         def res = personDao.add(person)
         println res
 
@@ -23,7 +24,7 @@ class Test extends Specification {
     }
 
     def "PersonDao#getById"(){
-        Person person = personDao.getById(27)
+        Person person = personDao.getById(7)
         println person
         expect:
         true

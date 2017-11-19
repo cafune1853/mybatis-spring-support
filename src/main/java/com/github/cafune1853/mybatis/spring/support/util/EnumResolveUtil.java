@@ -1,12 +1,15 @@
 package com.github.cafune1853.mybatis.spring.support.util;
 
 import com.github.cafune1853.mybatis.spring.support.annotation.EnumRepresentField;
+import lombok.extern.slf4j.Slf4j;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class EnumResolveUtil {
 	private static final Map<Class<? extends Enum>, EnumResolveData> CACHED;
 	private static final Set<Class<?>> LEGAL_REPRESENT_FIELD_TYPE;
@@ -14,15 +17,21 @@ public class EnumResolveUtil {
 		Set<Class<?>> classes = new HashSet<>();
 		classes.add(String.class);
 		classes.add(Long.class);
+		classes.add(long.class);
 		classes.add(Integer.class);
+		classes.add(int.class);
 		classes.add(Short.class);
-		classes.add(Byte.class);
+		classes.add(short.class);
 		CACHED = new ConcurrentHashMap<>();
 		LEGAL_REPRESENT_FIELD_TYPE = Collections.unmodifiableSet(classes);
 	}
 	
 	public static boolean hasRepresentField(Class<? extends Enum> enumClazz){
-		return getEnumResolveData(enumClazz).isHasRepresentField();
+		boolean result = getEnumResolveData(enumClazz).isHasRepresentField();
+		if(!result){
+			log.warn("You use FieldEnumTypeHandler as EnumHandler but don't has a field annotated with EnumRepresentField in {}, so fallback to EnumTypeHandler", enumClazz);
+		}
+		return result;
 	}
 	
 	public static <E extends Enum<E>> E getEnumByRepresentFieldValue(Class<E> enumClazz, Object representFieldValue){
