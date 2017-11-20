@@ -15,17 +15,18 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class BaseProvider {
-    public static final String CLASS_KEY = "clazz";
-    public static final String PARAM_KEY = "param";
-    public static final String PAGE_KEY = "page";
-    public static final String COLUMN_KEY = "column";
-    public static final String WHERE_KEY = "where";
-    public static final String ORDER_KEY = "order";
-    public static final String GROUP_KEY = "groupBy";
-    //使用不可见字符
-    public static final char FIELD_LEFT = '\u0003';
-    //使用不可见字符
-    public static final char FIELD_RIGHT = '\u0004';
+    public static final String CLASS_KEY = "CLAZZ";
+    public static final String PARAM_KEY = "PARAM";
+    public static final String PAGE_KEY = "PAGE";
+    private static final String COLUMN_KEY = "column";
+    private static final String WHERE_KEY = "where";
+    private static final String ORDER_KEY = "order";
+    private static final String GROUP_KEY = "groupBy";
+    /**
+     * 使用不可见字符
+     */
+    private static final char FIELD_LEFT = '\u0003';
+    private static final char FIELD_RIGHT = '\u0004';
 
     /**
      * 查询所有记录
@@ -33,7 +34,7 @@ public class BaseProvider {
      * @param clazz
      * @return
      */
-    public String findAll(final Class<?> clazz) {
+    public String listAll(final Class<?> clazz) {
         return new SQL().SELECT("*").FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
     }
 
@@ -63,40 +64,13 @@ public class BaseProvider {
     }
 
     /**
-     * 查询（根据whereEntity条件）
-     *
-     * @param obj
-     * @return
-     * @see BaseProvider#findByEntity(Object)
-     */
-    @Deprecated
-    @SuppressWarnings("Duplicates")
-    public String findBySelective(final Object obj) {
-      Class<?> clazz = obj.getClass();
-      PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(clazz);
-      StringBuilder where = new StringBuilder();
-        for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
-            if (isNull(kv.getValue(), obj)) {
-                continue;
-            }
-            where.append(FIELD_LEFT).append(kv.getKey()).append(FIELD_RIGHT).append("=#{").append(kv.getValue().getName()).append("} AND ");
-        }
-
-        int index = where.lastIndexOf(" AND");
-        if (index > 0) {
-            where.setLength(index);
-        }
-        return new SQL().SELECT("*").FROM(getTableName(meta, obj)).WHERE(where.toString()).toString();
-    }
-
-    /**
      * 统计所有记录行数
      *
      * @param clazz
      * @return
      */
     public String countAll(final Class<?> clazz) {
-        return new SQL().SELECT("count(0)").FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
+        return new SQL().SELECT("count(*)").FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
     }
 
     /**

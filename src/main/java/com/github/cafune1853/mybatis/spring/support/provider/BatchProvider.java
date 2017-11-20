@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * 批量
- * Created by 姬昂 on 16/7/6.
  */
 @Slf4j
 public class BatchProvider {
