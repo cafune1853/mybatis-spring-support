@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.cafune1853.mybatis.spring.support.provider.CrudProvider;
+import com.github.cafune1853.mybatis.spring.support.provider.BaseProvider;
 import com.github.cafune1853.mybatis.spring.support.util.PersistenceEntityMeta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
@@ -63,10 +63,10 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 					Map<String, Object> argMap = null;
 					if(arg instanceof Map){
 						argMap = (Map<String,Object>)arg;
-						argMap.put(CrudProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+						argMap.put(BaseProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
 					}else{
-						argMap.put(CrudProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
-						argMap.put(CrudProvider.PARAM_KEY, arg);
+						argMap.put(BaseProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+						argMap.put(BaseProvider.PARAM_KEY, arg);
 					}
 					args[1] = argMap;
 				}else {
@@ -193,12 +193,6 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 			}
 			return entityClazz;
 		});
-	}
-	
-	public static void main(String[] args) {
-		BaseInterceptor baseInterceptor = new BaseInterceptor();
-		Class<?> clz = baseInterceptor.getEntityClassByMapperClass(new IBaseMapper<String>(){}.getClass());
-		System.out.println(clz);
 	}
 	
 	@Override

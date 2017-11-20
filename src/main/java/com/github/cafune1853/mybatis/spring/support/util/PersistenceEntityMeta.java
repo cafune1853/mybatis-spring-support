@@ -39,6 +39,14 @@ public class PersistenceEntityMeta {
         return PERSISTENCE_ENTITY_META_CACHE.computeIfAbsent(clazz, PersistenceEntityMeta::new);
     }
     
+    public String columnNameToFieldName(String columnName){
+        Field field = columnFieldMaps.get(columnName);
+        if(field == null){
+            throw new IllegalArgumentException(String.format("ColumnName:%s is not a correct columnName.", columnName));
+        }
+        return field.getName();
+    }
+    
     public Class<?> getEntityClazz() {
         return entityClazz;
     }
