@@ -5,7 +5,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.util.PersistenceEntityMeta;
+import com.github.cafune1853.mybatis.spring.support.util.StringUtil;
 import org.apache.ibatis.jdbc.SQL;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +24,6 @@ public class BaseProvider {
     private static final String WHERE_KEY = "where";
     private static final String ORDER_KEY = "order";
     private static final String GROUP_KEY = "groupBy";
-    /**
-     * 使用不可见字符
-     */
-    private static final char FIELD_LEFT = '\u0003';
-    private static final char FIELD_RIGHT = '\u0004';
 
     /**
      * 查询所有记录
@@ -53,7 +50,7 @@ public class BaseProvider {
             if (isNull(kv.getValue(), obj)) {
                 continue;
             }
-            where.append(FIELD_LEFT).append(kv.getKey()).append(FIELD_RIGHT).append("=#{").append(kv.getValue().getName()).append("} AND ");
+            where.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote()).append("=#{").append(kv.getValue().getName()).append("} AND ");
         }
         int index = where.lastIndexOf(" AND");
         if (index > 0) {
@@ -117,19 +114,19 @@ public class BaseProvider {
         SQL sql = new SQL().SELECT(names).FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName());
         if (map.containsKey(WHERE_KEY)) {
             Object obj = map.get(WHERE_KEY);
-            if (obj != null && !isNullOrEmpty(obj.toString())) {
+            if (obj != null && !StringUtil.isNullOrEmpty(obj.toString())) {
                 sql.WHERE((String) obj);
             }
         }
         if (map.containsKey(ORDER_KEY)) {
             Object obj = map.get(ORDER_KEY);
-            if (obj != null && !isNullOrEmpty(obj.toString())) {
+            if (obj != null && !StringUtil.isNullOrEmpty(obj.toString())) {
                 sql.ORDER_BY((String) map.get(ORDER_KEY));
             }
         }
         if (map.containsKey(GROUP_KEY)) {
             Object obj = map.get(GROUP_KEY);
-            if (obj != null && !isNullOrEmpty(obj.toString())) {
+            if (obj != null && !StringUtil.isNullOrEmpty(obj.toString())) {
                 sql.GROUP_BY((String) map.get(GROUP_KEY));
             }
         }
@@ -205,7 +202,7 @@ public class BaseProvider {
                 setting.append(',');
             }
 
-            setting.append(FIELD_LEFT).append(kv.getKey()).append(FIELD_RIGHT).append("=#{").append(kv.getValue().getName()).append('}');
+            setting.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote()).append("=#{").append(kv.getValue().getName()).append('}');
         }
         return new SQL().UPDATE(getTableName(meta, obj)).SET(setting.toString()).WHERE(meta.getIdColumnName() + "=#{" + meta.columnNameToFieldName(meta.getIdColumnName()) + "}").toString();
     }
@@ -230,7 +227,7 @@ public class BaseProvider {
                 values.append(',');
             }
 
-            names.append(FIELD_LEFT).append(kv.getKey()).append(FIELD_RIGHT);
+            names.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote());
             values.append("#{").append(kv.getValue().getName()).append('}');
         }
 
@@ -256,8 +253,12 @@ public class BaseProvider {
         }
     }
     
-    private boolean isNullOrEmpty(String str){
-      return str == null || str.isEmpty();
+    private char getLeftIdentifierQuote(){
+        return DBConfig.getInstance().getDbType().getLeftIdentifierQuote();
+    }
+    
+    private char getRightIdentifierQuote(){
+        return DBConfig.getInstance().getDbType().getRightIdentifierQuote();
     }
     
     private String concatList(List<?> objects, String separator){

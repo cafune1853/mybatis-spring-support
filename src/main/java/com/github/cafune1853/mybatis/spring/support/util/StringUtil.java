@@ -36,7 +36,8 @@ public class StringUtil {
 		return sbd.toString();
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(camelCaseToUnderScore("I___Love"));
+	public static boolean isNullOrEmpty(String string){
+		return string == null || string.isEmpty();
 	}
+	
 }

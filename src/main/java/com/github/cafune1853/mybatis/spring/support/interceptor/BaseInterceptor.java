@@ -7,6 +7,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
+import com.github.cafune1853.mybatis.spring.support.constant.DBType;
 import com.github.cafune1853.mybatis.spring.support.provider.BaseProvider;
 import com.github.cafune1853.mybatis.spring.support.util.PersistenceEntityMeta;
 import lombok.extern.slf4j.Slf4j;
@@ -206,6 +208,7 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 	
 	@Override
 	public void setProperties(Properties properties) {
-	
+		String dialect = properties.getProperty("dialect");
+		DBConfig.configDbType(DBType.getByDialect(dialect));
 	}
 }
