@@ -98,12 +98,6 @@ public interface IBaseMapper<T> {
     int updateAndIncrement(T t);
 
     /**
-     * 更新记录
-     */
-    @UpdateProvider(type = BaseProvider.class, method = "save")
-    int save(T t);
-
-    /**
      * 删除记录
      */
     @DeleteProvider(type = BaseProvider.class, method = "delete")
