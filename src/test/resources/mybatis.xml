@@ -36,7 +36,7 @@
     </typeHandlers>
 
     <plugins>
-        <plugin interceptor="com.github.cafune1853.mybatis.spring.support.interceptor.BaseInterceptor"/>
+        <plugin interceptor="com.github.cafune1853.mybatis.spring.support.interceptor.CurdInterceptor"/>
     </plugins>
 
     <!-- Continue going here -->

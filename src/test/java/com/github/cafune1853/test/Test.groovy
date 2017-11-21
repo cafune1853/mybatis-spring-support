@@ -16,7 +16,7 @@ class Test extends Specification {
         person.setName("doggy")
         person.setAge(23)
         person.setSexEnum(SexEnum.MALE)
-        def res = personDao.insert(person)
+        def res = personDao.insertAndSetObjectId(person)
         println res
 
         expect:

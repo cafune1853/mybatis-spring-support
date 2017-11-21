@@ -10,7 +10,7 @@ import javax.persistence.Table;
 @Table(name = "person")
 public class Person {
 	@Id
-	private long id;
+	private long idx;
 	private String name;
 	private int age;
 	private SexEnum sexEnum;

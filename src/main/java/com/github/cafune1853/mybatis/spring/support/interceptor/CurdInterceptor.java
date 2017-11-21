@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.constant.DBType;
 import com.github.cafune1853.mybatis.spring.support.provider.BaseProvider;
@@ -41,7 +42,7 @@ import javax.persistence.Id;
 @Intercepts({
 	@Signature(type = Executor.class, method = "query", args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}),
 	@Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})})
-public class BaseInterceptor extends AbstractInterceptor implements Interceptor {
+public class CurdInterceptor extends AbstractInterceptor implements Interceptor {
 	/**
 	 * Mapper方法的全路径到其元数据的缓存。
 	 */
@@ -67,6 +68,7 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 						argMap = (Map<String,Object>)arg;
 						argMap.put(BaseProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
 					}else{
+						argMap = new HashMap<>(2);
 						argMap.put(BaseProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
 						argMap.put(BaseProvider.PARAM_KEY, arg);
 					}
@@ -80,13 +82,19 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 				MetaObject metaObject = getMetaObject(mappedStatement);
 				metaObject.setValue("resultMaps", mapperMethodMeta.getResultMaps());
 			}
+			
+			if(mapperMethodMeta.isSetKeyPropertiesAndColumns()){
+				MetaObject metaObject = getMetaObject(mappedStatement);
+				metaObject.setValue("keyProperties", new String[]{mapperMethodMeta.getKeyProperty()});
+				metaObject.setValue("keyColumns", new String[]{mapperMethodMeta.getKeyColumn()});
+			}
 		}
 		return invocation.proceed();
 	}
 	
 	private MapperMethodMeta getMapperMeta(Configuration configuration, String fullMapperMethodName){
 		return MAPPER_METHOD_META_CACHE.computeIfAbsent(fullMapperMethodName, key -> {
-			int lastIndex = key.lastIndexOf(".");
+			int lastIndex = key.lastIndexOf('.');
 			String mapperClassName = key.substring(0, lastIndex);
 			String mapperMethodName = key.substring(lastIndex + 1);
 			try {
@@ -100,7 +108,10 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 	private MapperMethodMeta buildMapperMeta(Configuration configuration, String mapperClassName, String mapperMethodName) throws ClassNotFoundException{
 		Class<?> mapperClazz = Class.forName(mapperClassName);
 		boolean appendClazzAsArg = false;
-		boolean resultMapWithJpa = false;
+		boolean autoResultMap = false;
+		boolean setKeyPropertiesAndColumns = false;
+		String keyProperty = null;
+		String keyColumn = null;
 		Class<?> entityClazz = null;
 		List<ResultMap> resultMaps = new ArrayList<>();
 		Method method = getMapperMethodByName(mapperClazz, mapperMethodName);
@@ -108,34 +119,44 @@ public class BaseInterceptor extends AbstractInterceptor implements Interceptor 
 			appendClazzAsArg = true;
 			entityClazz = getEntityClassByMapperClass(mapperClazz);
 			if(method.isAnnotationPresent(AutoResultMap.class)){
-				resultMapWithJpa = true;
-				String mapperId = mapperClassName + DYNAMIC_GENERATE_MAPPER_ID_SUFFIX;
-				if(configuration.hasResultMap(mapperId)){
-					resultMaps.add(configuration.getResultMap(mapperId));
-				}else{
-					List<ResultMapping> resultMappings = new ArrayList<>();
-					PersistenceEntityMeta persistenceEntityMeta = PersistenceEntityMeta.getPersistenceEntityMeta(entityClazz);
-					for(Map.Entry<String, Field> columnFieldEntry : persistenceEntityMeta.getColumnFieldMaps().entrySet()){
-						String columnName = columnFieldEntry.getKey();
-						String fieldName = columnFieldEntry.getValue().getName();
-						Class<?> columnTypeClass = resolveResultJavaType(entityClazz, fieldName);
-						List<ResultFlag> flags = new ArrayList<>();
-						if (columnFieldEntry.getValue().isAnnotationPresent(Id.class)) {
-							flags.add(ResultFlag.ID);
-						}
-						ResultMapping.Builder builder = new ResultMapping.Builder(configuration, fieldName, columnName, columnTypeClass);
-						builder.flags(flags);
-						builder.composites(new ArrayList<>());
-						builder.notNullColumns(new HashSet<>());
-						resultMappings.add(builder.build());
-					}
-					ResultMap resultMap = new ResultMap.Builder(configuration, mapperId, entityClazz, resultMappings).build();
-					configuration.addResultMap(resultMap);
-					resultMaps.add(resultMap);
-				}
+				autoResultMap = true;
+				String mapperResultId = mapperClassName + DYNAMIC_GENERATE_MAPPER_ID_SUFFIX;
+				ResultMap resultMap = getResultMap(configuration, entityClazz, mapperResultId);
+				resultMaps.add(resultMap);
 			}
 		}
-		return new MapperMethodMeta(entityClazz, appendClazzAsArg, resultMapWithJpa, resultMaps);
+		if(method.isAnnotationPresent(SetKeyPropertiesAndColumns.class)){
+			setKeyPropertiesAndColumns = true;
+			PersistenceEntityMeta persistenceEntityMeta = PersistenceEntityMeta.getPersistenceEntityMeta(getEntityClassByMapperClass(mapperClazz));
+			keyColumn = persistenceEntityMeta.getIdColumnName();
+			keyProperty = persistenceEntityMeta.columnNameToFieldName(keyColumn);
+		}
+		return new MapperMethodMeta(entityClazz, appendClazzAsArg, autoResultMap, resultMaps,setKeyPropertiesAndColumns, keyProperty, keyColumn);
+	}
+	
+	private ResultMap getResultMap(Configuration configuration, Class<?> entityClazz, String mapperResultId) {
+		if(configuration.hasResultMap(mapperResultId)){
+			return configuration.getResultMap(mapperResultId);
+		}
+		List<ResultMapping> resultMappings = new ArrayList<>();
+		PersistenceEntityMeta persistenceEntityMeta = PersistenceEntityMeta.getPersistenceEntityMeta(entityClazz);
+		for(Map.Entry<String, Field> columnFieldEntry : persistenceEntityMeta.getColumnFieldMaps().entrySet()){
+			String columnName = columnFieldEntry.getKey();
+			String fieldName = columnFieldEntry.getValue().getName();
+			Class<?> columnTypeClass = resolveResultJavaType(entityClazz, fieldName);
+			List<ResultFlag> flags = new ArrayList<>();
+			if (columnFieldEntry.getValue().isAnnotationPresent(Id.class)) {
+				flags.add(ResultFlag.ID);
+			}
+			ResultMapping.Builder builder = new ResultMapping.Builder(configuration, fieldName, columnName, columnTypeClass);
+			builder.flags(flags);
+			builder.composites(new ArrayList<>());
+			builder.notNullColumns(new HashSet<>());
+			resultMappings.add(builder.build());
+		}
+		ResultMap resultMap = new ResultMap.Builder(configuration, mapperResultId, entityClazz, resultMappings).build();
+		configuration.addResultMap(resultMap);
+		return resultMap;
 	}
 	
 	/**

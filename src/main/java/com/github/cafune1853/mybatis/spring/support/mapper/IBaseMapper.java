@@ -3,12 +3,19 @@ package com.github.cafune1853.mybatis.spring.support.mapper;
 import java.io.Serializable;
 import java.util.List;
 
+import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
+import com.github.cafune1853.mybatis.spring.support.interceptor.CurdInterceptor;
 import org.apache.ibatis.annotations.*;
 
 import com.github.cafune1853.mybatis.spring.support.annotation.AppendEntityClass;
 import com.github.cafune1853.mybatis.spring.support.annotation.AutoResultMap;
 import com.github.cafune1853.mybatis.spring.support.provider.BaseProvider;
 
+/**
+ * 要继承这个类并使用其中的方法，必须先配置{@link CurdInterceptor}
+ * 作为拦截器，否则会报错。
+ * @author huangzhw
+ */
 public interface IBaseMapper<T> {
     /**
      * 查找所有记录
@@ -86,6 +93,7 @@ public interface IBaseMapper<T> {
      */
     @InsertProvider(type = BaseProvider.class, method = "insert")
     @Options(useGeneratedKeys = true)
+    @SetKeyPropertiesAndColumns
     int insertAndSetObjectId(T t);
 
     /**
