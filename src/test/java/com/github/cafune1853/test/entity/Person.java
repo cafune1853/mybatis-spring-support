@@ -11,7 +11,7 @@ import lombok.Data;
 @Table(name = "person")
 public class Person {
     @Id
-    private long idx;
+    private long id;
     private String name;
     private int age;
     private SexEnum sexEnum;
