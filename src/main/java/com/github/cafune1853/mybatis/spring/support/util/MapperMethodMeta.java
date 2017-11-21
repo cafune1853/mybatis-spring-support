@@ -19,7 +19,7 @@ import com.github.cafune1853.mybatis.spring.support.annotation.AppendEntityClass
 import com.github.cafune1853.mybatis.spring.support.annotation.AutoResultMap;
 import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
 import com.github.cafune1853.mybatis.spring.support.constant.MetaObjectShared;
-import com.github.cafune1853.mybatis.spring.support.mapper.IBaseMapper;
+import com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -177,7 +177,7 @@ public final class MapperMethodMeta {
             for (Type genericInterface : genericInterfaces) {
                 if (genericInterface instanceof ParameterizedType) {
                     ParameterizedType parameterizedType = (ParameterizedType) genericInterface;
-                    if (IBaseMapper.class.isAssignableFrom(((Class) parameterizedType.getRawType()))) {
+                    if (ICurdMapper.class.isAssignableFrom(((Class) parameterizedType.getRawType()))) {
                         Type[] genericTypes = parameterizedType.getActualTypeArguments();
                         if (genericTypes.length == 1) {
                             entityClazz = (Class<?>) genericTypes[0];
@@ -186,7 +186,7 @@ public final class MapperMethodMeta {
                 }
             }
             if (entityClazz == null) {
-                throw new IllegalStateException(String.format("MapperClass(nameSpace):%s must implements/extends IBaseMapper and contains one generic param.", mapperClazz.getName()));
+                throw new IllegalStateException(String.format("MapperClass(nameSpace):%s must implements/extends ICurdMapper and contains one generic param.", mapperClazz.getName()));
             }
             return entityClazz;
         });

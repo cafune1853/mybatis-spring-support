@@ -15,7 +15,7 @@ import org.apache.ibatis.session.RowBounds;
 
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.constant.DBType;
-import com.github.cafune1853.mybatis.spring.support.provider.BaseProvider;
+import com.github.cafune1853.mybatis.spring.support.provider.CurdProvider;
 import com.github.cafune1853.mybatis.spring.support.util.MapperMethodMeta;
 
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +40,11 @@ public class CurdInterceptor extends AbstractInterceptor implements Interceptor 
                     Map<String, Object> argMap = null;
                     if (arg instanceof Map) {
                         argMap = (Map<String, Object>) arg;
-                        argMap.put(BaseProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+                        argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
                     } else {
                         argMap = new HashMap<>(2);
-                        argMap.put(BaseProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
-                        argMap.put(BaseProvider.PARAM_KEY, arg);
+                        argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+                        argMap.put(CurdProvider.PARAM_KEY, arg);
                     }
                     args[1] = argMap;
                 } else {
