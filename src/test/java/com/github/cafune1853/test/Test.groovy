@@ -29,4 +29,10 @@ class Test extends Specification {
         expect:
         true
     }
+
+    def "PersonDao#deleteByIds"(){
+        def res = personDao.deleteByIds(Arrays.asList("31", "32"))
+        expect:
+        res == 2
+    }
 }

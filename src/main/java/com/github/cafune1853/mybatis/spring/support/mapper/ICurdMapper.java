@@ -102,7 +102,7 @@ public interface ICurdMapper<E> {
      * @param ids: id 列表
      * @return 影响行数
      */
-    @AutoResultMap
+    @AppendEntityClass
     @DeleteProvider(type = CurdProvider.class, method = "deleteByIds")
     int deleteByIds(@Param(CurdProvider.PARAM_KEY) List<? extends Serializable> ids);
     

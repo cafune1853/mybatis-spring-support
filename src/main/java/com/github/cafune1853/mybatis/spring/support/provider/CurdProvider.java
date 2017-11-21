@@ -6,12 +6,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper;
 import org.apache.ibatis.jdbc.SQL;
 
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
+import com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper;
 import com.github.cafune1853.mybatis.spring.support.util.EntityMeta;
-import com.github.cafune1853.mybatis.spring.support.util.StringUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -183,10 +182,18 @@ public class CurdProvider {
     private String concatList(List<?> objects, String separator) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < objects.size() - 1; i++) {
-            sb.append(objects.get(i));
+            sb.append("#{");
+            sb.append(PARAM_KEY);
+            sb.append("[");
+            sb.append(i);
+            sb.append("]}");
             sb.append(separator);
         }
-        sb.append(objects.get(objects.size() - 1));
+        sb.append("#{");
+        sb.append(PARAM_KEY);
+        sb.append("[");
+        sb.append(objects.size() - 1);
+        sb.append("]}");
         return sb.toString();
     }
 }
