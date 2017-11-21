@@ -23,16 +23,21 @@ import org.apache.ibatis.session.Configuration;
 import javax.persistence.Id;
 
 /**
- * 包含了对mapper方法的解析结果
+ * 用于解析Mapper方法的元数据信息。
  * @author huangzhw
  */
 @Slf4j
 @Getter
 public final class MapperMethodMeta {
+	/** 该Mapper方法对应的实体类 */
 	private final Class<?> entityClazz;
+	/** 是否追加实体类作为Provider的额外参数, 见{@link AppendEntityClass}*/
 	private final boolean appendClazzAsArg;
+	/** 是否自动在MappedStatement中设置结果集,见{@link AutoResultMap}*/
 	private final boolean autoResultMap;
+	/** ResultMap列表，使用entityClazz生成 */
 	private final List<ResultMap> resultMaps;
+	/** 是否往MappedStatement中设置keyProperties和keyColumns */
 	private final boolean setKeyPropertiesAndColumns;
 	private final String keyProperty;
 	private final String keyColumn;
@@ -57,8 +62,16 @@ public final class MapperMethodMeta {
 		this.keyColumn = keyColumn;
 	}
 	
-	public static MapperMethodMeta getMapperMethodMeta(Configuration configuration, String fullMapperMethodName){
-		return MAPPER_METHOD_META_CACHE.computeIfAbsent(fullMapperMethodName, key -> {
+	/**
+	 * MapperMethod即MapperStatement,通过该方法可以获得一个Mapper方法的元数据信息，在这里解析
+	 * {@link AppendEntityClass} {@link AutoResultMap} {@link SetKeyPropertiesAndColumns}
+	 * 三个注解。
+	 * @param configuration: mybatis上下文配置，目前仅用于缓存ResultMap
+	 * @param mapperMethodId: 即mapper方法的全路径.
+	 * @return {@link MapperMethodMeta}
+	 */
+	public static MapperMethodMeta getMapperMethodMeta(Configuration configuration, String mapperMethodId){
+		return MAPPER_METHOD_META_CACHE.computeIfAbsent(mapperMethodId, key -> {
 			int lastIndex = key.lastIndexOf('.');
 			String mapperClassName = key.substring(0, lastIndex);
 			String mapperMethodName = key.substring(lastIndex + 1);
@@ -85,6 +98,7 @@ public final class MapperMethodMeta {
 			entityClazz = getEntityClassByMapperClass(mapperClazz);
 			if(method.isAnnotationPresent(AutoResultMap.class)){
 				autoResultMap = true;
+				//以整个mapper作为key，进行MapperResult的缓存，可以考虑优化成使用实体类作为key进行缓存。
 				String mapperResultId = mapperClassName + DYNAMIC_GENERATE_MAPPER_ID_SUFFIX;
 				ResultMap resultMap = getResultMap(configuration, entityClazz, mapperResultId);
 				resultMaps.add(resultMap);
