@@ -19,13 +19,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class EntityMeta {
+    private static final int EXCLUDE_MODIFIERS = Modifier.TRANSIENT | Modifier.STATIC;
+    private static final Map<Class<?>, EntityMeta> PERSISTENCE_ENTITY_META_CACHE = new ConcurrentHashMap<>();
     private final Class<?> entityClazz;
     private final String tableName;
     private final String idColumnName;
     private final Field idField;
     private final Map<String, Field> columnFieldMaps;
-    private static final int EXCLUDE_MODIFIERS = Modifier.TRANSIENT | Modifier.STATIC;
-    private static final Map<Class<?>, EntityMeta> PERSISTENCE_ENTITY_META_CACHE = new ConcurrentHashMap<>();
 
     private EntityMeta(Class<?> entityClazz) {
         if (entityClazz == null) {
@@ -41,34 +41,6 @@ public final class EntityMeta {
 
     public static EntityMeta getPersistenceEntityMeta(Class<?> clazz) {
         return PERSISTENCE_ENTITY_META_CACHE.computeIfAbsent(clazz, EntityMeta::new);
-    }
-
-    public String columnNameToFieldName(String columnName) {
-        Field field = columnFieldMaps.get(columnName);
-        if (field == null) {
-            throw new IllegalArgumentException(String.format("ColumnName:%s is not a correct columnName.", columnName));
-        }
-        return field.getName();
-    }
-
-    public Class<?> getEntityClazz() {
-        return entityClazz;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public String getIdColumnName() {
-        return idColumnName;
-    }
-
-    public Field getIdField() {
-        return idField;
-    }
-
-    public Map<String, Field> getColumnFieldMaps() {
-        return columnFieldMaps;
     }
 
     private static EntityAnalyzeResult analyzeEntity(Class<?> entityClazz) {
@@ -111,6 +83,34 @@ public final class EntityMeta {
             tableName = entityClazz.getSimpleName();
         }
         return StringUtil.camelCaseToUnderScore(tableName);
+    }
+
+    public String columnNameToFieldName(String columnName) {
+        Field field = columnFieldMaps.get(columnName);
+        if (field == null) {
+            throw new IllegalArgumentException(String.format("ColumnName:%s is not a correct columnName.", columnName));
+        }
+        return field.getName();
+    }
+
+    public Class<?> getEntityClazz() {
+        return entityClazz;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public String getIdColumnName() {
+        return idColumnName;
+    }
+
+    public Field getIdField() {
+        return idField;
+    }
+
+    public Map<String, Field> getColumnFieldMaps() {
+        return columnFieldMaps;
     }
 
     private static class EntityAnalyzeResult {

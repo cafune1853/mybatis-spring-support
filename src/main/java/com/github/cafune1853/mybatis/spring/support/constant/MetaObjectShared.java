@@ -9,7 +9,7 @@ import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
  * @author huangzhw
  */
 public class MetaObjectShared {
-	public static final ReflectorFactory REFLECTOR_FACTORY = new DefaultReflectorFactory();
-	public static final DefaultObjectFactory OBJECT_FACTORY = new DefaultObjectFactory();
-	public static final DefaultObjectWrapperFactory OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
+    public static final ReflectorFactory REFLECTOR_FACTORY = new DefaultReflectorFactory();
+    public static final DefaultObjectFactory OBJECT_FACTORY = new DefaultObjectFactory();
+    public static final DefaultObjectWrapperFactory OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
 }

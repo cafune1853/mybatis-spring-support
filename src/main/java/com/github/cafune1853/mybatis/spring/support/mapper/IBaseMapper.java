@@ -3,12 +3,12 @@ package com.github.cafune1853.mybatis.spring.support.mapper;
 import java.io.Serializable;
 import java.util.List;
 
-import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
-import com.github.cafune1853.mybatis.spring.support.interceptor.CurdInterceptor;
 import org.apache.ibatis.annotations.*;
 
 import com.github.cafune1853.mybatis.spring.support.annotation.AppendEntityClass;
 import com.github.cafune1853.mybatis.spring.support.annotation.AutoResultMap;
+import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
+import com.github.cafune1853.mybatis.spring.support.interceptor.CurdInterceptor;
 import com.github.cafune1853.mybatis.spring.support.provider.BaseProvider;
 
 /**

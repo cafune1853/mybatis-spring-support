@@ -23,7 +23,7 @@ class Test extends Specification {
         res != 0
     }
 
-    def "PersonDao#getById"(){
+    def "PersonDao#getById"() {
         Person person = personDao.getById(7)
         println person
         expect:

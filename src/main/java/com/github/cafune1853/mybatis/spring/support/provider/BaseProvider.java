@@ -5,10 +5,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.jdbc.SQL;
+
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.util.EntityMeta;
 import com.github.cafune1853.mybatis.spring.support.util.StringUtil;
-import org.apache.ibatis.jdbc.SQL;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -237,7 +238,6 @@ public class BaseProvider {
     protected String getTableName(EntityMeta meta, Object obj) {
         return meta.getTableName();
     }
-    
 
     /**
      * 列名判空处理
@@ -252,16 +252,16 @@ public class BaseProvider {
             return true;
         }
     }
-    
-    private char getLeftIdentifierQuote(){
+
+    private char getLeftIdentifierQuote() {
         return DBConfig.getInstance().getDbType().getLeftIdentifierQuote();
     }
-    
-    private char getRightIdentifierQuote(){
+
+    private char getRightIdentifierQuote() {
         return DBConfig.getInstance().getDbType().getRightIdentifierQuote();
     }
-    
-    private String concatList(List<?> objects, String separator){
+
+    private String concatList(List<?> objects, String separator) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < objects.size() - 1; i++) {
             sb.append(objects.get(i));

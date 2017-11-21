@@ -32,7 +32,8 @@
     </settings>
 
     <typeHandlers>
-        <typeHandler handler="com.github.cafune1853.mybatis.spring.support.handler.FieldEnumTypeHandler" javaType="com.github.cafune1853.test.SexEnum"/>
+        <typeHandler handler="com.github.cafune1853.mybatis.spring.support.handler.FieldEnumTypeHandler"
+                     javaType="com.github.cafune1853.test.SexEnum"/>
     </typeHandlers>
 
     <plugins>

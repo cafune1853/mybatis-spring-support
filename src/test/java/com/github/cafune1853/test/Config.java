@@ -12,6 +12,14 @@ import org.springframework.core.io.ClassPathResource;
 @Configuration
 public class Config {
     @Bean
+    public static MapperScannerConfigurer scannerConfigurer() {
+        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
+        mapperScannerConfigurer.setBasePackage("com.github.cafune1853.test.mapper");
+        mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
+        return mapperScannerConfigurer;
+    }
+
+    @Bean
     public DataSource dataSource() {
         PooledDataSource pooledDataSource = new PooledDataSource();
         pooledDataSource.setDriver("com.mysql.jdbc.Driver");
@@ -27,13 +35,5 @@ public class Config {
         sqlSessionFactoryBean.setDataSource(dataSource);
         sqlSessionFactoryBean.setConfigLocation(new ClassPathResource("mybatis.xml"));
         return sqlSessionFactoryBean;
-    }
-
-    @Bean
-    public static MapperScannerConfigurer scannerConfigurer() {
-        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
-        mapperScannerConfigurer.setBasePackage("com.github.cafune1853.test.mapper");
-        mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactory");
-        return mapperScannerConfigurer;
     }
 }

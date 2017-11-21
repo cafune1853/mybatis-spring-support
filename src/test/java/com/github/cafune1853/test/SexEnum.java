@@ -8,12 +8,12 @@ import com.github.cafune1853.mybatis.spring.support.annotation.EnumRepresentFiel
  */
 
 public enum SexEnum {
-	MALE(1), FEMALE(2);
-	
-	@EnumRepresentField
-	private int type;
-	
-	SexEnum(int type) {
-		this.type = type;
-	}
+    MALE(1), FEMALE(2);
+
+    @EnumRepresentField
+    private int type;
+
+    SexEnum(int type) {
+        this.type = type;
+    }
 }
