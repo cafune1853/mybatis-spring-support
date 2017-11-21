@@ -13,17 +13,20 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+/**
+ * @author huangzhw
+ */
 @Slf4j
-public class PersistenceEntityMeta {
+public class EntityMeta {
     private final Class<?> entityClazz;
     private final String tableName;
     private final String idColumnName;
     private final Field idField;
     private final Map<String, Field> columnFieldMaps;
     private static final int EXCLUDE_MODIFIERS = Modifier.TRANSIENT | Modifier.STATIC;
-    private static final Map<Class<?>, PersistenceEntityMeta> PERSISTENCE_ENTITY_META_CACHE = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, EntityMeta> PERSISTENCE_ENTITY_META_CACHE = new ConcurrentHashMap<>();
     
-    private PersistenceEntityMeta(Class<?> entityClazz) {
+    private EntityMeta(Class<?> entityClazz) {
         if (entityClazz == null) {
             throw new IllegalArgumentException("EntityClazz should not be null.");
         }
@@ -35,8 +38,8 @@ public class PersistenceEntityMeta {
         this.columnFieldMaps = Collections.unmodifiableMap(entityAnalyzeResult.getColumnFieldMap());
     }
     
-    public static PersistenceEntityMeta getPersistenceEntityMeta(Class<?> clazz){
-        return PERSISTENCE_ENTITY_META_CACHE.computeIfAbsent(clazz, PersistenceEntityMeta::new);
+    public static EntityMeta getPersistenceEntityMeta(Class<?> clazz){
+        return PERSISTENCE_ENTITY_META_CACHE.computeIfAbsent(clazz, EntityMeta::new);
     }
     
     public String columnNameToFieldName(String columnName){

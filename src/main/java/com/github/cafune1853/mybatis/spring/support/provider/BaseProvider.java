@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
-import com.github.cafune1853.mybatis.spring.support.util.PersistenceEntityMeta;
+import com.github.cafune1853.mybatis.spring.support.util.EntityMeta;
 import com.github.cafune1853.mybatis.spring.support.util.StringUtil;
 import org.apache.ibatis.jdbc.SQL;
 
@@ -32,7 +32,7 @@ public class BaseProvider {
      * @return
      */
     public String listAll(final Class<?> clazz) {
-        return new SQL().SELECT("*").FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
+        return new SQL().SELECT("*").FROM(EntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
     }
 
     /**
@@ -44,7 +44,7 @@ public class BaseProvider {
     @SuppressWarnings("Duplicates")
     public String findByEntity(final Object obj) {
         Class<?> clazz = obj.getClass();
-        PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
         StringBuilder where = new StringBuilder();
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
             if (isNull(kv.getValue(), obj)) {
@@ -67,7 +67,7 @@ public class BaseProvider {
      * @return
      */
     public String countAll(final Class<?> clazz) {
-        return new SQL().SELECT("count(*)").FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
+        return new SQL().SELECT("count(*)").FROM(EntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
     }
 
     /**
@@ -77,7 +77,7 @@ public class BaseProvider {
      * @return
      */
     public String deleteAll(final Class<?> clazz) {
-        return new SQL().DELETE_FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
+        return new SQL().DELETE_FROM(EntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
     }
 
     /**
@@ -87,7 +87,7 @@ public class BaseProvider {
      * @return
      */
     public String truncate(final Class<?> clazz) {
-        return "TRUNCATE TABLE " + PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName();
+        return "TRUNCATE TABLE " + EntityMeta.getPersistenceEntityMeta(clazz).getTableName();
     }
 
     /**
@@ -98,7 +98,7 @@ public class BaseProvider {
      */
     public String findById(final Map<String, Object> parameter) {
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
-        PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
         return new SQL().SELECT("*").FROM(meta.getTableName()).WHERE(meta.getIdColumnName() + "=#{" + PARAM_KEY + '}').toString();
     }
 
@@ -111,7 +111,7 @@ public class BaseProvider {
     public String findByPage(final Map<String, Object> map) {
         Class<?> clazz = (Class<?>) map.get(CLASS_KEY);
         String names = map.containsKey(COLUMN_KEY) ? map.get(COLUMN_KEY).toString() : "*";
-        SQL sql = new SQL().SELECT(names).FROM(PersistenceEntityMeta.getPersistenceEntityMeta(clazz).getTableName());
+        SQL sql = new SQL().SELECT(names).FROM(EntityMeta.getPersistenceEntityMeta(clazz).getTableName());
         if (map.containsKey(WHERE_KEY)) {
             Object obj = map.get(WHERE_KEY);
             if (obj != null && !StringUtil.isNullOrEmpty(obj.toString())) {
@@ -140,7 +140,7 @@ public class BaseProvider {
      * @return
      */
     public String delete(final Object obj) {
-        final PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(obj.getClass());
+        final EntityMeta meta = EntityMeta.getPersistenceEntityMeta(obj.getClass());
         return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE(meta.getIdColumnName() + "=#{" + meta.columnNameToFieldName(meta.getIdColumnName()) + "}").toString();
     }
 
@@ -151,7 +151,7 @@ public class BaseProvider {
      */
     public String deleteById(final Map<String, Object> parameter) {
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
-        PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
         return new SQL().DELETE_FROM(meta.getTableName()).WHERE(meta.getIdColumnName() + "=#{" + PARAM_KEY + '}').toString();
     }
 
@@ -166,7 +166,7 @@ public class BaseProvider {
             throw new SQLException(PARAM_KEY + " is null or empty");
         }
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
-        PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
         String where = meta.getIdColumnName() + " in (" + concatList(ids, ",") + ')';
         return new SQL().DELETE_FROM(meta.getTableName()).WHERE(where).toString();
     }
@@ -190,7 +190,7 @@ public class BaseProvider {
      */
     public String update(Object obj) {
         Class<?> clazz = obj.getClass();
-        PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
         StringBuilder setting = new StringBuilder(32);
         int i = 0;
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
@@ -215,7 +215,7 @@ public class BaseProvider {
      */
 
     public String insert(Object obj) {
-        PersistenceEntityMeta meta = PersistenceEntityMeta.getPersistenceEntityMeta(obj.getClass());
+        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(obj.getClass());
         StringBuilder names = new StringBuilder(), values = new StringBuilder();
         int i = 0;
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
@@ -234,7 +234,7 @@ public class BaseProvider {
         return new SQL().INSERT_INTO(getTableName(meta, obj)).VALUES(names.toString(), values.toString()).toString();
     }
 
-    protected String getTableName(PersistenceEntityMeta meta, Object obj) {
+    protected String getTableName(EntityMeta meta, Object obj) {
         return meta.getTableName();
     }
     

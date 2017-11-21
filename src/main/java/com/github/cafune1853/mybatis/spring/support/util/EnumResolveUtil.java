@@ -103,4 +103,34 @@ public class EnumResolveUtil {
 		}
 		return Optional.empty();
 	}
+	
+	private static class EnumResolveData {
+		private final boolean hasRepresentField;
+		private final Field representField;
+		private final Class<?> representFieldClass;
+		private final Object[] enumValues;
+		
+		EnumResolveData(boolean hasRepresentField, Field representField, Class<?> representFieldClass, Object[] enumValues) {
+			this.hasRepresentField = hasRepresentField;
+			this.representField = representField;
+			this.enumValues = enumValues;
+			this.representFieldClass = representFieldClass;
+		}
+		
+		private boolean isHasRepresentField() {
+			return hasRepresentField;
+		}
+		
+		private Field getRepresentField() {
+			return representField;
+		}
+		
+		private Object[] getEnumValues() {
+			return enumValues;
+		}
+		
+		private Class<?> getRepresentFieldClass() {
+			return representFieldClass;
+		}
+	}
 }
