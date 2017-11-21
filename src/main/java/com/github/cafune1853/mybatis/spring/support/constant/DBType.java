@@ -14,7 +14,7 @@ import lombok.Getter;
  */
 @Getter
 public enum DBType {
-    MYSQL("mysql", '`', '`'), POSTGRESQL("postgresql", '"', '"'), SQLSERVER("sqlserver", '[', ']');
+    MYSQL("mysql", '`', '`'), POSTGRESQL("postgresql", '"', '"'), SQLSERVER("sqlserver", '[', ']'), ORACLE("oracle", '"', '"');
 
     /**
      * 数据库方言名称

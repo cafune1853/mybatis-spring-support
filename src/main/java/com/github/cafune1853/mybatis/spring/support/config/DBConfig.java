@@ -7,6 +7,7 @@ import lombok.Data;
 /**
  * @author doggy
  * Created on 2017-11-20.
+ * 这个类必须配合{@link com.github.cafune1853.mybatis.spring.support.interceptor.CurdInterceptor} 一起使用
  */
 @Data
 public class DBConfig {
