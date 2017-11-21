@@ -31,7 +31,7 @@ class Test extends Specification {
     }
 
     def "PersonDao#deleteByIds"(){
-        def res = personDao.deleteByIds(Arrays.asList("31", "32"))
+        def res = personDao.deleteByIds(Arrays.asList(37, 38))
         expect:
         res == 2
     }
