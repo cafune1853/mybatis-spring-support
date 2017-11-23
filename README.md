@@ -17,6 +17,7 @@
     ```
     使用Curd模板
     ```java
+    //泛型参数为该Mapper对应的实体类
      public interface MyMapper extends com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper<MyEntity>{
 	
      }
