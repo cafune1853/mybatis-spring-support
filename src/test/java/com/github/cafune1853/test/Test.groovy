@@ -1,5 +1,6 @@
 package com.github.cafune1853.test
 
+import com.github.cafune1853.mybatis.spring.support.pagination.Page
 import com.github.cafune1853.test.entity.Person
 import com.github.cafune1853.test.mapper.PersonDao
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +22,12 @@ class Test extends Specification {
 
         expect:
         res != 0
+    }
+
+    def "PersonDao#pagination"(){
+        def res = personDao.pagination(new Page(1, 2))
+        expect:
+        res.size() == 2
     }
 
     def "PersonDao#getById"() {

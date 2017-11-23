@@ -94,7 +94,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
         Optional<Page> optionalPage = getPageParam(boundSql.getParameterObject());
         int prefixLength = 10;
         String selectPrefix = "select";
-        if(optionalPage.isPresent() && boundSql.getSql().substring(prefixLength).toLowerCase().startsWith(selectPrefix)){
+        if(optionalPage.isPresent() && boundSql.getSql().substring(0, prefixLength).toLowerCase().startsWith(selectPrefix)){
             Page page = optionalPage.get();
             //取消内存分页
             statementHandler.setValue("delegate.rowBounds.offset", RowBounds.NO_ROW_OFFSET);
