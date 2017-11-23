@@ -9,11 +9,11 @@ import org.apache.ibatis.annotations.*;
 import com.github.cafune1853.mybatis.spring.support.annotation.AppendEntityClass;
 import com.github.cafune1853.mybatis.spring.support.annotation.AutoResultMap;
 import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
-import com.github.cafune1853.mybatis.spring.support.interceptor.CurdInterceptor;
+import com.github.cafune1853.mybatis.spring.support.interceptor.CurdPaginationInterceptor;
 import com.github.cafune1853.mybatis.spring.support.provider.CurdProvider;
 
 /**
- * 要继承这个类并使用其中的方法，必须先配置{@link CurdInterceptor}
+ * 要继承这个类并使用其中的方法，必须先配置{@link CurdPaginationInterceptor}
  * 作为拦截器，否则会报错。
  * @author huangzhw
  */
