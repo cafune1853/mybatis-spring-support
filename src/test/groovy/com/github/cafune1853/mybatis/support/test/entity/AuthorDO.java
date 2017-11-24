@@ -13,11 +13,11 @@ public class AuthorDO extends BaseLongIdEntity{
 	@Column(name = "name")
 	private String name;
 	@Column(name = "age")
-	private int age;
+	private Integer age;
 	// 性别
 	@Column(name = "sex")
 	private SexEnum sex;
 	// 是否签约
 	@Column(name = "is_signed")
-	private boolean signed;
+	private Boolean signed;
 }

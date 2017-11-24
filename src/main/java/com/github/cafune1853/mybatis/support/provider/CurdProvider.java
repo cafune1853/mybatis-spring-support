@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import com.github.cafune1853.mybatis.support.exception.AllEntityFieldIsNullException;
 import com.github.cafune1853.mybatis.support.meta.EntityMeta;
 import org.apache.ibatis.jdbc.SQL;
 
@@ -140,7 +141,10 @@ public class CurdProvider {
             where.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote()).append("=#{").append(kv.getValue().getName()).append("} AND ");
         }
         int index = where.lastIndexOf(" AND");
-        if (index > 0) {
+        if (index <= 0) {
+            //在所有域为空的情况下，相当于没有查询到数据
+            return new SQL().SELECT("1").FROM(getTableName(meta, obj)).WHERE("false").toString();
+        }else {
             where.setLength(index);
         }
 
@@ -166,7 +170,25 @@ public class CurdProvider {
      */
     public String deleteByEntity(final Object obj) {
         final EntityMeta meta = EntityMetaFactory.getEntityMeta(obj.getClass());
-        return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE(meta.getIdColumnName() + "=#{" + meta.columnNameToFieldName(meta.getIdColumnName()) + "}").toString();
+        StringBuilder equalConditionBuilder = new StringBuilder();
+        meta.getColumnFieldMaps().forEach((c, f) -> {
+            if(!isNull(f, obj)){
+                equalConditionBuilder.append(getLeftIdentifierQuote());
+                equalConditionBuilder.append(c);
+                equalConditionBuilder.append(getRightIdentifierQuote());
+                equalConditionBuilder.append("=#{");
+                equalConditionBuilder.append(f.getName());
+                equalConditionBuilder.append("}");
+                equalConditionBuilder.append(" and ");
+            }
+        });
+        if(equalConditionBuilder.length() == 0){
+            // 无非空域，则认为不影响任何列
+            return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE("false").toString();
+        }else{
+            equalConditionBuilder.setLength(equalConditionBuilder.length() - 5);
+        }
+        return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE(equalConditionBuilder.toString()).toString();
     }
 
     /**

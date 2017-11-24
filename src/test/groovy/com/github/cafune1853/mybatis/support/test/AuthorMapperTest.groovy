@@ -1,5 +1,6 @@
 package com.github.cafune1853.mybatis.support.test
 
+import com.github.cafune1853.mybatis.support.exception.AllEntityFieldIsNullException
 import com.github.cafune1853.mybatis.support.test.constant.SexEnum
 import com.github.cafune1853.mybatis.support.test.entity.AuthorDO
 import org.apache.ibatis.io.Resources
@@ -64,7 +65,7 @@ class AuthorMapperTest extends Specification {
     }
 
     def "AuthorMapper#insertAndSetObjectId"(){
-        def insertResult = authorMapper.insertAndSetObjectId(authorDO)
+        authorMapper.insertAndSetObjectId(authorDO)
         expect:
         authorDO.getId() != null
     }
@@ -79,10 +80,69 @@ class AuthorMapperTest extends Specification {
     }
 
     def "AuthorMapper#listByEntity"(){
-        authorMapper.insert(authorDO)
-        authorMapper.insert(authorDO)
+        doubleInsert()
         def result = authorMapper.listByEntity(authorDO)
         expect:
         result.size() == 2
+    }
+
+    def "AuthorMapper#listByEntity == with all field null"(){
+        doubleInsert()
+        when:
+        def res = authorMapper.listByEntity(new AuthorDO())
+        then:
+        res.isEmpty()
+    }
+
+    def "AuthorMapper#listAll"(){
+        doubleInsert()
+        def result = authorMapper.listAll()
+        expect:
+        result.size() == 2
+    }
+
+    def "AuthorMapper#countAll"(){
+        doubleInsert()
+        def count = authorMapper.countAll()
+        expect:
+        count == 2
+    }
+
+    def "AuthorMapper#deleteByEntity"(){
+        doubleInsert()
+        authorMapper.deleteByEntity(authorDO)
+        def count = authorMapper.countAll()
+        expect:
+        count == 0
+    }
+
+    def "AuthorMapper#deleteByEntity == with all field null"(){
+        doubleInsert()
+        def res = authorMapper.deleteByEntity(new AuthorDO())
+
+        expect:
+        res == 0
+    }
+
+    def "AuthorMapper#deleteById"(){
+        authorMapper.insertAndSetObjectId(authorDO)
+        authorMapper.deleteById(authorDO.getId())
+        def count = authorMapper.countAll()
+        expect:
+        count == 0
+    }
+
+    def "AuthorMapper#deleteByIds"(){
+        doubleInsert()
+        authorMapper.insertAndSetObjectId(authorDO)
+        authorMapper.deleteByIds(Arrays.asList(authorDO.getId()))
+        def count = authorMapper.countAll()
+        expect:
+        count == 2
+    }
+
+    private void doubleInsert() {
+        authorMapper.insert(authorDO)
+        authorMapper.insert(authorDO)
     }
 }
