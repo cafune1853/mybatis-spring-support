@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -53,7 +54,14 @@ public final class EntityMeta {
             for (Field field : fields) {
                 field.setAccessible(true);
                 if (!field.isAnnotationPresent(Transient.class) && ((field.getModifiers() & EXCLUDE_MODIFIERS) == 0)) {
-                    String columnName = StringUtil.camelCaseToUnderScore(field.getName());
+                    String columnName = null;
+                    if(field.isAnnotationPresent(Column.class)){
+                        columnName = field.getAnnotation(Column.class).name();
+                    }
+                    if(columnName == null){
+                        columnName = field.getName();
+                    }
+                    columnName = StringUtil.camelCaseToUnderScore(columnName);
                     if (columnName.contains("$")) {
                         continue;
                     }

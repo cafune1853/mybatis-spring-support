@@ -110,7 +110,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
         }
     }
     
-    //TODO:暂不支持@Param("alias") Map 形式的mapper方法。
+    // TODO:暂不支持@Param("alias") Map 形式的mapper方法。
     private Optional<Page> getPageParam(Object parameterObject){
         if(parameterObject instanceof Page){
             return Optional.of((Page)parameterObject);
