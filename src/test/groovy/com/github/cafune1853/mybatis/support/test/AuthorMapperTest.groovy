@@ -1,6 +1,6 @@
 package com.github.cafune1853.mybatis.support.test
 
-import com.github.cafune1853.mybatis.support.exception.AllEntityFieldIsNullException
+import com.github.cafune1853.mybatis.support.pagination.Page
 import com.github.cafune1853.mybatis.support.test.constant.SexEnum
 import com.github.cafune1853.mybatis.support.test.entity.AuthorDO
 import org.apache.ibatis.io.Resources
@@ -139,6 +139,16 @@ class AuthorMapperTest extends Specification {
         def count = authorMapper.countAll()
         expect:
         count == 2
+    }
+
+    def "AuthorMapper#listByPage"(){
+        doubleInsert()
+        Page page = new Page(1,1);
+        def authors = authorMapper.listByPage(page);
+
+        expect:
+        authors.size() == 1
+        !authors.get(0).getSigned()
     }
 
     private void doubleInsert() {
