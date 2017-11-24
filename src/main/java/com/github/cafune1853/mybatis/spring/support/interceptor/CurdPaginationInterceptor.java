@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import com.github.cafune1853.mybatis.spring.support.pagination.Page;
+import com.github.cafune1853.mybatis.spring.support.meta.MapperMethodMetaFactory;
 import com.github.cafune1853.mybatis.spring.support.util.ReflectUtil;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
@@ -28,7 +29,7 @@ import org.apache.ibatis.session.RowBounds;
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.constant.DBType;
 import com.github.cafune1853.mybatis.spring.support.provider.CurdProvider;
-import com.github.cafune1853.mybatis.spring.support.util.MapperMethodMeta;
+import com.github.cafune1853.mybatis.spring.support.meta.MapperMethodMeta;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,36 +52,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
         Object target = invocation.getTarget();
         Object[] args = invocation.getArgs();
         if (target instanceof Executor) {
-            MappedStatement mappedStatement = (MappedStatement) args[0];
-            MapperMethodMeta mapperMethodMeta = MapperMethodMeta.getMapperMethodMeta(mappedStatement.getConfiguration(), mappedStatement.getId());
-            if (mapperMethodMeta.isAppendClazzAsArg()) {
-                Object arg = args[1];
-                if (arg != null) {
-                    Map<String, Object> argMap = null;
-                    if (arg instanceof Map) {
-                        argMap = (Map<String, Object>) arg;
-                        argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
-                    } else {
-                        argMap = new HashMap<>(2);
-                        argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
-                        argMap.put(CurdProvider.PARAM_KEY, arg);
-                    }
-                    args[1] = argMap;
-                } else {
-                    args[1] = mapperMethodMeta.getEntityClazz();
-                }
-            }
-
-            if (mapperMethodMeta.isAutoResultMap()) {
-                MetaObject metaObject = getMetaObject(mappedStatement);
-                metaObject.setValue("resultMaps", mapperMethodMeta.getResultMaps());
-            }
-
-            if (mapperMethodMeta.isSetKeyPropertiesAndColumns()) {
-                MetaObject metaObject = getMetaObject(mappedStatement);
-                metaObject.setValue("keyProperties", new String[] { mapperMethodMeta.getKeyProperty() });
-                metaObject.setValue("keyColumns", new String[] { mapperMethodMeta.getKeyColumn() });
-            }
+            appendClazzAndAutoResultMap(args);
         }else if(target instanceof StatementHandler){
             BoundSql boundSql = ((StatementHandler) target).getBoundSql();
             MetaObject statementHandler = getMetaObject(target);
@@ -88,6 +60,39 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
             pagination(connection, statementHandler, boundSql);
         }
         return invocation.proceed();
+    }
+    
+    private void appendClazzAndAutoResultMap(Object[] args) {
+        MappedStatement mappedStatement = (MappedStatement) args[0];
+        MapperMethodMeta mapperMethodMeta = MapperMethodMetaFactory.getMapperMethodMeta(mappedStatement.getConfiguration(), mappedStatement.getId());
+        if (mapperMethodMeta.isAppendClazzAsArg()) {
+            Object arg = args[1];
+            if (arg != null) {
+                Map<String, Object> argMap = null;
+                if (arg instanceof Map) {
+                    argMap = (Map<String, Object>) arg;
+                    argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+                } else {
+                    argMap = new HashMap<>(2);
+                    argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
+                    argMap.put(CurdProvider.PARAM_KEY, arg);
+                }
+                args[1] = argMap;
+            } else {
+                args[1] = mapperMethodMeta.getEntityClazz();
+            }
+        }
+        
+        if (mapperMethodMeta.isAutoResultMap()) {
+            MetaObject metaObject = getMetaObject(mappedStatement);
+            metaObject.setValue("resultMaps", mapperMethodMeta.getResultMaps());
+        }
+        
+        if (mapperMethodMeta.isSetKeyPropertiesAndColumns()) {
+            MetaObject metaObject = getMetaObject(mappedStatement);
+            metaObject.setValue("keyProperties", new String[] { mapperMethodMeta.getKeyProperty() });
+            metaObject.setValue("keyColumns", new String[] { mapperMethodMeta.getKeyColumn() });
+        }
     }
     
     private void pagination(Connection connection, MetaObject statementHandler, BoundSql boundSql)  throws SQLException{

@@ -6,11 +6,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import com.github.cafune1853.mybatis.spring.support.meta.EntityMetaFactory;
 import org.apache.ibatis.jdbc.SQL;
 
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper;
-import com.github.cafune1853.mybatis.spring.support.util.EntityMeta;
+import com.github.cafune1853.mybatis.spring.support.meta.EntityMeta;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +34,7 @@ public class CurdProvider {
      * @param entity: 实体对象
      */
     public String insert(Object entity) {
-        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(entity.getClass());
+        EntityMeta meta = EntityMetaFactory.getEntityMeta(entity.getClass());
         StringBuilder names = new StringBuilder(), values = new StringBuilder();
         int i = 0;
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
@@ -58,7 +59,7 @@ public class CurdProvider {
      */
     public String update(Object entity) {
         Class<?> clazz = entity.getClass();
-        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         StringBuilder setting = new StringBuilder(32);
         int i = 0;
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
@@ -80,7 +81,7 @@ public class CurdProvider {
      */
     public String getById(final Map<String, Object> parameter) {
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
-        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         return new SQL().SELECT("*").FROM(meta.getTableName()).WHERE(meta.getIdColumnName() + "=#{" + PARAM_KEY + '}').toString();
     }
     
@@ -90,7 +91,7 @@ public class CurdProvider {
     @SuppressWarnings("Duplicates")
     public String listByEntity(final Object obj) {
         Class<?> clazz = obj.getClass();
-        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         StringBuilder where = new StringBuilder();
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
             if (isNull(kv.getValue(), obj)) {
@@ -110,21 +111,21 @@ public class CurdProvider {
      * @see ICurdMapper#listAll()
      */
     public String listAll(final Class<?> clazz) {
-        return new SQL().SELECT("*").FROM(EntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
+        return new SQL().SELECT("*").FROM(EntityMetaFactory.getEntityMeta(clazz).getTableName()).toString();
     }
     
     /**
      * @see ICurdMapper#countAll()
      */
     public String countAll(final Class<?> clazz) {
-        return new SQL().SELECT("count(*)").FROM(EntityMeta.getPersistenceEntityMeta(clazz).getTableName()).toString();
+        return new SQL().SELECT("count(*)").FROM(EntityMetaFactory.getEntityMeta(clazz).getTableName()).toString();
     }
     
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#deleteByEntity(Object)
      */
     public String deleteByEntity(final Object obj) {
-        final EntityMeta meta = EntityMeta.getPersistenceEntityMeta(obj.getClass());
+        final EntityMeta meta = EntityMetaFactory.getEntityMeta(obj.getClass());
         return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE(meta.getIdColumnName() + "=#{" + meta.columnNameToFieldName(meta.getIdColumnName()) + "}").toString();
     }
     
@@ -133,7 +134,7 @@ public class CurdProvider {
      */
     public String deleteById(final Map<String, Object> parameter) {
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
-        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         return new SQL().DELETE_FROM(meta.getTableName()).WHERE(meta.getIdColumnName() + "=#{" + PARAM_KEY + '}').toString();
     }
     
@@ -147,7 +148,7 @@ public class CurdProvider {
             throw new SQLException(PARAM_KEY + " is null or empty");
         }
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
-        EntityMeta meta = EntityMeta.getPersistenceEntityMeta(clazz);
+        EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         String where = meta.getIdColumnName() + " in (" + handleIdList(ids,PARAM_KEY) + ')';
         return new SQL().DELETE_FROM(meta.getTableName()).WHERE(where).toString();
     }
@@ -156,7 +157,7 @@ public class CurdProvider {
      * @see ICurdMapper#truncate()
      */
     public String truncate(final Class<?> clazz) {
-        return "TRUNCATE TABLE " + EntityMeta.getPersistenceEntityMeta(clazz).getTableName();
+        return "TRUNCATE TABLE " + EntityMetaFactory.getEntityMeta(clazz).getTableName();
     }
 
     private String getTableName(EntityMeta meta, Object obj) {
