@@ -26,7 +26,7 @@ public interface ICurdMapper<E> {
      * @return 影响行数
      */
     @InsertProvider(type = CurdProvider.class, method = "insert")
-    int insert(@Param("e") E e);
+    int insert(E e);
 
     /**
      * 插入记录并设置t的id属性（优先为@Id,其次寻找名为id的字段）为数据库的自增ID,
