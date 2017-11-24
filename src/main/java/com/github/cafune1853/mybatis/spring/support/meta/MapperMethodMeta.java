@@ -1,29 +1,13 @@
 package com.github.cafune1853.mybatis.spring.support.meta;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.List;
 
-import javax.persistence.Id;
-
-import com.github.cafune1853.mybatis.spring.support.meta.EntityMeta;
-import com.github.cafune1853.mybatis.spring.support.meta.EntityMetaFactory;
-import org.apache.ibatis.mapping.ResultFlag;
 import org.apache.ibatis.mapping.ResultMap;
-import org.apache.ibatis.mapping.ResultMapping;
-import org.apache.ibatis.reflection.MetaClass;
-import org.apache.ibatis.session.Configuration;
 
 import com.github.cafune1853.mybatis.spring.support.annotation.AppendEntityClass;
 import com.github.cafune1853.mybatis.spring.support.annotation.AutoResultMap;
-import com.github.cafune1853.mybatis.spring.support.annotation.SetKeyPropertiesAndColumns;
-import com.github.cafune1853.mybatis.spring.support.constant.MetaObjectShared;
-import com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -54,31 +38,31 @@ public final class MapperMethodMeta {
         this.keyProperty = keyProperty;
         this.keyColumn = keyColumn;
     }
-    
+
     public Class<?> getEntityClazz() {
         return entityClazz;
     }
-    
+
     public boolean isAppendClazzAsArg() {
         return appendClazzAsArg;
     }
-    
+
     public boolean isAutoResultMap() {
         return autoResultMap;
     }
-    
+
     public List<ResultMap> getResultMaps() {
         return resultMaps;
     }
-    
+
     public boolean isSetKeyPropertiesAndColumns() {
         return setKeyPropertiesAndColumns;
     }
-    
+
     public String getKeyProperty() {
         return keyProperty;
     }
-    
+
     public String getKeyColumn() {
         return keyColumn;
     }

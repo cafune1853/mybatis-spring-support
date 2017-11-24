@@ -11,9 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.github.cafune1853.mybatis.spring.support.pagination.Page;
-import com.github.cafune1853.mybatis.spring.support.meta.MapperMethodMetaFactory;
-import com.github.cafune1853.mybatis.spring.support.util.ReflectUtil;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -28,8 +25,11 @@ import org.apache.ibatis.session.RowBounds;
 
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.constant.DBType;
-import com.github.cafune1853.mybatis.spring.support.provider.CurdProvider;
 import com.github.cafune1853.mybatis.spring.support.meta.MapperMethodMeta;
+import com.github.cafune1853.mybatis.spring.support.meta.MapperMethodMetaFactory;
+import com.github.cafune1853.mybatis.spring.support.pagination.Page;
+import com.github.cafune1853.mybatis.spring.support.provider.CurdProvider;
+import com.github.cafune1853.mybatis.spring.support.util.ReflectUtil;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,30 +38,28 @@ import lombok.extern.slf4j.Slf4j;
  * 支持参数
  */
 @Slf4j
-@Intercepts({
-    @Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class }),
-    @Signature(type = Executor.class, method = "update", args = { MappedStatement.class, Object.class }),
-    @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class})})
+@Intercepts({ @Signature(type = Executor.class, method = "query", args = { MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class }), @Signature(type = Executor.class, method = "update", args = { MappedStatement.class, Object.class }), @Signature(type = StatementHandler.class, method = "prepare", args = { Connection.class, Integer.class }) })
 public class CurdPaginationInterceptor extends AbstractInterceptor implements Interceptor {
     private static final Field SQL_FIELD;
     static {
         SQL_FIELD = ReflectUtil.silentGetFieldAndSetAccessible(BoundSql.class, "sql");
     }
+
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Object target = invocation.getTarget();
         Object[] args = invocation.getArgs();
         if (target instanceof Executor) {
             appendClazzAndAutoResultMap(args);
-        }else if(target instanceof StatementHandler){
+        } else if (target instanceof StatementHandler) {
             BoundSql boundSql = ((StatementHandler) target).getBoundSql();
             MetaObject statementHandler = getMetaObject(target);
-            Connection connection = (Connection)args[0];
+            Connection connection = (Connection) args[0];
             pagination(connection, statementHandler, boundSql);
         }
         return invocation.proceed();
     }
-    
+
     private void appendClazzAndAutoResultMap(Object[] args) {
         MappedStatement mappedStatement = (MappedStatement) args[0];
         MapperMethodMeta mapperMethodMeta = MapperMethodMetaFactory.getMapperMethodMeta(mappedStatement.getConfiguration(), mappedStatement.getId());
@@ -82,30 +80,30 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
                 args[1] = mapperMethodMeta.getEntityClazz();
             }
         }
-        
+
         if (mapperMethodMeta.isAutoResultMap()) {
             MetaObject metaObject = getMetaObject(mappedStatement);
             metaObject.setValue("resultMaps", mapperMethodMeta.getResultMaps());
         }
-        
+
         if (mapperMethodMeta.isSetKeyPropertiesAndColumns()) {
             MetaObject metaObject = getMetaObject(mappedStatement);
             metaObject.setValue("keyProperties", new String[] { mapperMethodMeta.getKeyProperty() });
             metaObject.setValue("keyColumns", new String[] { mapperMethodMeta.getKeyColumn() });
         }
     }
-    
-    private void pagination(Connection connection, MetaObject statementHandler, BoundSql boundSql)  throws SQLException{
+
+    private void pagination(Connection connection, MetaObject statementHandler, BoundSql boundSql) throws SQLException {
         Optional<Page> optionalPage = getPageParam(boundSql.getParameterObject());
         int prefixLength = 10;
         String selectPrefix = "select";
-        if(optionalPage.isPresent() && boundSql.getSql().substring(0, prefixLength).toLowerCase().startsWith(selectPrefix)){
+        if (optionalPage.isPresent() && boundSql.getSql().substring(0, prefixLength).toLowerCase().startsWith(selectPrefix)) {
             Page page = optionalPage.get();
             //取消内存分页
             statementHandler.setValue("delegate.rowBounds.offset", RowBounds.NO_ROW_OFFSET);
             statementHandler.setValue("delegate.rowBounds.limit", RowBounds.NO_ROW_LIMIT);
             //统计总条数
-            if(optionalPage.get().isCountTotal()){
+            if (optionalPage.get().isCountTotal()) {
                 MappedStatement mappedStatement = (MappedStatement) statementHandler.getValue("delegate.mappedStatement");
                 page.setTotalNumber(getTotalCount(connection, mappedStatement, boundSql));
             }
@@ -114,22 +112,22 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
             ReflectUtil.silentSetFieldValue(SQL_FIELD, boundSql, newSql);
         }
     }
-    
+
     // TODO:暂不支持@Param("alias") Map 形式的mapper方法。
-    private Optional<Page> getPageParam(Object parameterObject){
-        if(parameterObject instanceof Page){
-            return Optional.of((Page)parameterObject);
-        }else if(parameterObject instanceof Map){
-            Map map = (Map)parameterObject;
+    private Optional<Page> getPageParam(Object parameterObject) {
+        if (parameterObject instanceof Page) {
+            return Optional.of((Page) parameterObject);
+        } else if (parameterObject instanceof Map) {
+            Map map = (Map) parameterObject;
             for (Object param : map.entrySet()) {
-                if(param instanceof Page){
-                    return Optional.of((Page)param);
+                if (param instanceof Page) {
+                    return Optional.of((Page) param);
                 }
             }
         }
         return Optional.empty();
     }
-    
+
     private int getTotalCount(Connection conn, MappedStatement ms, BoundSql boundSql) throws SQLException {
         String sqlLower = boundSql.getSql().toLowerCase();
         int start = sqlLower.indexOf("from");
@@ -140,7 +138,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
         if (stop == -1) {
             stop = sqlLower.length();
         }
-    
+
         String countSql = "select count(0) " + boundSql.getSql().substring(start, stop);
         BoundSql countBoundSql = new BoundSql(ms.getConfiguration(), countSql, boundSql.getParameterMappings(), boundSql.getParameterObject());
         ParameterHandler parameterHandler = new DefaultParameterHandler(ms, boundSql.getParameterObject(), countBoundSql);

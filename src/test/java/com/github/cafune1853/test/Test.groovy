@@ -24,7 +24,7 @@ class Test extends Specification {
         res != 0
     }
 
-    def "PersonDao#pagination"(){
+    def "PersonDao#pagination"() {
         def res = personDao.pagination(new Page(1, 2))
         expect:
         res.size() == 2
@@ -37,7 +37,7 @@ class Test extends Specification {
         true
     }
 
-    def "PersonDao#deleteByIds"(){
+    def "PersonDao#deleteByIds"() {
         def res = personDao.deleteByIds(Arrays.asList(37, 38))
         expect:
         res == 2

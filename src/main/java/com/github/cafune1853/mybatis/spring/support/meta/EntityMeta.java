@@ -1,16 +1,8 @@
 package com.github.cafune1853.mybatis.spring.support.meta;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,7 +28,7 @@ public final class EntityMeta {
         this.idField = idField;
         this.columnFieldMaps = Collections.unmodifiableMap(columnFieldMaps);
     }
-    
+
     public String columnNameToFieldName(String columnName) {
         Field field = columnFieldMaps.get(columnName);
         if (field == null) {

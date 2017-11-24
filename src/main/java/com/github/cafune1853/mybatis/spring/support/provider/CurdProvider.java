@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import com.github.cafune1853.mybatis.spring.support.meta.EntityMetaFactory;
 import org.apache.ibatis.jdbc.SQL;
 
 import com.github.cafune1853.mybatis.spring.support.config.DBConfig;
 import com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper;
 import com.github.cafune1853.mybatis.spring.support.meta.EntityMeta;
+import com.github.cafune1853.mybatis.spring.support.meta.EntityMetaFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +27,47 @@ public class CurdProvider {
     private static final String WHERE_KEY = "where";
     private static final String ORDER_KEY = "order";
     private static final String GROUP_KEY = "groupBy";
-    
+
+    /**
+     * 将id列表快速转换成字符串形式，对于基本数值类型Long/Integer以及String类型进行快速处理，避免还需要通过PrepareStatement进行参数处理。
+     */
+    private static String handleIdList(List<?> objects, String paramName) {
+        char separator = ',';
+        StringBuilder sb = new StringBuilder();
+        if (objects.get(0) instanceof Long || objects.get(0) instanceof Integer) {
+            for (int i = 0; i < objects.size() - 1; i++) {
+                sb.append(objects.get(i));
+                sb.append(separator);
+            }
+            sb.append(objects.get(objects.size() - 1));
+        } else if (objects.get(0) instanceof String) {
+            for (int i = 0; i < objects.size() - 1; i++) {
+                sb.append('\'');
+                sb.append(objects.get(i));
+                sb.append('\'');
+                sb.append(separator);
+            }
+            sb.append('\'');
+            sb.append(objects.get(objects.size() - 1));
+            sb.append('\'');
+        } else {
+            for (int i = 0; i < objects.size() - 1; i++) {
+                sb.append("#{");
+                sb.append(paramName);
+                sb.append("[");
+                sb.append(i);
+                sb.append("]}");
+                sb.append(separator);
+            }
+            sb.append("#{");
+            sb.append(paramName);
+            sb.append("[");
+            sb.append(objects.size() - 1);
+            sb.append("]}");
+        }
+        return sb.toString();
+    }
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#insert(Object)
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#insertAndSetObjectId(Object)
@@ -45,14 +85,14 @@ public class CurdProvider {
                 names.append(',');
                 values.append(',');
             }
-            
+
             names.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote());
             values.append("#{").append(kv.getValue().getName()).append('}');
         }
-        
+
         return new SQL().INSERT_INTO(getTableName(meta, entity)).VALUES(names.toString(), values.toString()).toString();
     }
-    
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#update(Object)
      * @param entity:实体对象
@@ -66,16 +106,16 @@ public class CurdProvider {
             if (isNull(kv.getValue(), entity) || kv.getKey().equals(meta.getIdColumnName())) {
                 continue;
             }
-            
+
             if (i++ != 0) {
                 setting.append(',');
             }
-            
+
             setting.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote()).append("=#{").append(kv.getValue().getName()).append('}');
         }
         return new SQL().UPDATE(getTableName(meta, entity)).SET(setting.toString()).WHERE(meta.getIdColumnName() + "=#{" + meta.columnNameToFieldName(meta.getIdColumnName()) + "}").toString();
     }
-    
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#getById(Serializable)
      */
@@ -84,7 +124,7 @@ public class CurdProvider {
         EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         return new SQL().SELECT("*").FROM(meta.getTableName()).WHERE(meta.getIdColumnName() + "=#{" + PARAM_KEY + '}').toString();
     }
-    
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#listByEntity(Object)
      */
@@ -106,21 +146,21 @@ public class CurdProvider {
 
         return new SQL().SELECT("*").FROM(getTableName(meta, obj)).WHERE(where.toString()).toString();
     }
-    
+
     /**
      * @see ICurdMapper#listAll()
      */
     public String listAll(final Class<?> clazz) {
         return new SQL().SELECT("*").FROM(EntityMetaFactory.getEntityMeta(clazz).getTableName()).toString();
     }
-    
+
     /**
      * @see ICurdMapper#countAll()
      */
     public String countAll(final Class<?> clazz) {
         return new SQL().SELECT("count(*)").FROM(EntityMetaFactory.getEntityMeta(clazz).getTableName()).toString();
     }
-    
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#deleteByEntity(Object)
      */
@@ -128,7 +168,7 @@ public class CurdProvider {
         final EntityMeta meta = EntityMetaFactory.getEntityMeta(obj.getClass());
         return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE(meta.getIdColumnName() + "=#{" + meta.columnNameToFieldName(meta.getIdColumnName()) + "}").toString();
     }
-    
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#deleteById(Serializable)
      */
@@ -137,7 +177,7 @@ public class CurdProvider {
         EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         return new SQL().DELETE_FROM(meta.getTableName()).WHERE(meta.getIdColumnName() + "=#{" + PARAM_KEY + '}').toString();
     }
-    
+
     /**
      * @see com.github.cafune1853.mybatis.spring.support.mapper.ICurdMapper#deleteByIds(List)
      * @throws SQLException
@@ -149,10 +189,10 @@ public class CurdProvider {
         }
         Class<?> clazz = (Class<?>) parameter.get(CLASS_KEY);
         EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
-        String where = meta.getIdColumnName() + " in (" + handleIdList(ids,PARAM_KEY) + ')';
+        String where = meta.getIdColumnName() + " in (" + handleIdList(ids, PARAM_KEY) + ')';
         return new SQL().DELETE_FROM(meta.getTableName()).WHERE(where).toString();
     }
-    
+
     /**
      * @see ICurdMapper#truncate()
      */
@@ -178,45 +218,5 @@ public class CurdProvider {
 
     private char getRightIdentifierQuote() {
         return DBConfig.getInstance().getDbType().getRightIdentifierQuote();
-    }
-    
-    /**
-     * 将id列表快速转换成字符串形式，对于基本数值类型Long/Integer以及String类型进行快速处理，避免还需要通过PrepareStatement进行参数处理。
-     */
-    private static String handleIdList(List<?> objects,String paramName) {
-        char separator = ',';
-        StringBuilder sb = new StringBuilder();
-        if(objects.get(0) instanceof Long || objects.get(0) instanceof Integer){
-            for (int i = 0; i < objects.size() - 1; i++) {
-                sb.append(objects.get(i));
-                sb.append(separator);
-            }
-            sb.append(objects.get(objects.size() - 1));
-        }else if(objects.get(0) instanceof String){
-            for (int i = 0; i < objects.size() - 1; i++) {
-                sb.append('\'');
-                sb.append(objects.get(i));
-                sb.append('\'');
-                sb.append(separator);
-            }
-            sb.append('\'');
-            sb.append(objects.get(objects.size() - 1));
-            sb.append('\'');
-        }else{
-            for (int i = 0; i < objects.size() - 1; i++) {
-                sb.append("#{");
-                sb.append(paramName);
-                sb.append("[");
-                sb.append(i);
-                sb.append("]}");
-                sb.append(separator);
-            }
-            sb.append("#{");
-            sb.append(paramName);
-            sb.append("[");
-            sb.append(objects.size() - 1);
-            sb.append("]}");
-        }
-        return sb.toString();
     }
 }

@@ -27,7 +27,7 @@ public interface ICurdMapper<E> {
      */
     @InsertProvider(type = CurdProvider.class, method = "insert")
     int insert(@Param("e") E e);
-    
+
     /**
      * 插入记录并设置t的id属性（优先为@Id,其次寻找名为id的字段）为数据库的自增ID,
      * 返回值是修改的记录行数，使用object的getId方法获得id
@@ -39,14 +39,14 @@ public interface ICurdMapper<E> {
     @Options(useGeneratedKeys = true)
     @SetKeyPropertiesAndColumns
     int insertAndSetObjectId(E e);
-    
+
     /**
      * 更新记录
      * @see CurdProvider#update(Object)
      */
     @UpdateProvider(type = CurdProvider.class, method = "update")
     int update(E e);
-    
+
     /**
      * 根据主键查找记录
      * @see CurdProvider#getById(Map)
@@ -64,7 +64,7 @@ public interface ICurdMapper<E> {
      */
     @SelectProvider(type = CurdProvider.class, method = "listByEntity")
     List<E> listByEntity(E e);
-    
+
     /**
      * 查找所有记录
      * @see CurdProvider#listAll(Class)
@@ -80,14 +80,14 @@ public interface ICurdMapper<E> {
     @AppendEntityClass
     @SelectProvider(type = CurdProvider.class, method = "countAll")
     int countAll();
-    
+
     /**
      * 删除记录
      * @see CurdProvider#deleteByEntity(Object)
      */
     @DeleteProvider(type = CurdProvider.class, method = "deleteByEntity")
     int deleteByEntity(E e);
-    
+
     /**
      * 根据主键删除记录
      * @see CurdProvider#deleteById(Map)
@@ -95,7 +95,7 @@ public interface ICurdMapper<E> {
     @AutoResultMap
     @DeleteProvider(type = CurdProvider.class, method = "deleteById")
     int deleteById(Serializable id);
-    
+
     /**
      * 根据ids列表批量删除
      * @see CurdProvider#deleteByIds(Map)
@@ -105,7 +105,7 @@ public interface ICurdMapper<E> {
     @AppendEntityClass
     @DeleteProvider(type = CurdProvider.class, method = "deleteByIds")
     int deleteByIds(@Param(CurdProvider.PARAM_KEY) List<? extends Serializable> ids);
-    
+
     /**
      * 删除并创建一个同名的新表，可以回收innodb表空间，而且比deleteAll快，多用于测试case清理数据
      * @see CurdProvider#truncate(Class)

@@ -14,32 +14,32 @@ import lombok.Getter;
  */
 @Getter
 public enum DBType {
-    MYSQL("mysql", '`', '`'){
+    MYSQL("mysql", '`', '`') {
         @Override
         public String appendPagination(String oldSql, int pageNo, int pageSize) {
-            return oldSql+" limit "+(pageNo - 1)*pageSize+", "+pageSize;
+            return oldSql + " limit " + (pageNo - 1) * pageSize + ", " + pageSize;
         }
     },
-    POSTGRESQL("postgresql", '"', '"'){
+    POSTGRESQL("postgresql", '"', '"') {
         /**
          * 数据量大的话，有性能隐患
          */
         @Override
         public String appendPagination(String oldSql, int pageNo, int pageSize) {
-            return oldSql + " limit " + pageSize + " offset " + (pageNo - 1)*pageSize;
+            return oldSql + " limit " + pageSize + " offset " + (pageNo - 1) * pageSize;
         }
     },
-    SQLSERVER("sqlserver", '[', ']'){
+    SQLSERVER("sqlserver", '[', ']') {
         @Override
         public String appendPagination(String oldSql, int pageNo, int pageSize) {
             return oldSql;
         }
     },
-    ORACLE("oracle", '"', '"'){
+    ORACLE("oracle", '"', '"') {
         @Override
         public String appendPagination(String oldSql, int pageNo, int pageSize) {
-            int offset = (pageNo-1)*pageSize;
-            return "select * from (select tmp_tb.*,ROWNUM row_id from ("+oldSql+")  tmp_tb where ROWNUM<="+(offset+pageSize)+") where row_id>"+offset;
+            int offset = (pageNo - 1) * pageSize;
+            return "select * from (select tmp_tb.*,ROWNUM row_id from (" + oldSql + ")  tmp_tb where ROWNUM<=" + (offset + pageSize) + ") where row_id>" + offset;
         }
     };
 
@@ -63,15 +63,6 @@ public enum DBType {
         this.leftIdentifierQuote = leftIdentifierQuote;
         this.rightIdentifierQuote = rightIdentifierQuote;
     }
-    
-    /**
-     * 定义在分页时的行为
-     * @param oldSql: 原来的sql
-     * @param pageNo: 页号。从1开始
-     * @param pageSize: 分页大小
-     * @return newSql
-     */
-    public abstract String appendPagination(String oldSql, int pageNo, int pageSize);
 
     public static DBType getByDialect(String dialect) {
         if (StringUtil.isNullOrEmpty(dialect)) {
@@ -88,4 +79,13 @@ public enum DBType {
     private static List<String> listAllDialect() {
         return Arrays.stream(DBType.values()).map(DBType::getDialect).collect(Collectors.toList());
     }
+
+    /**
+     * 定义在分页时的行为
+     * @param oldSql: 原来的sql
+     * @param pageNo: 页号。从1开始
+     * @param pageSize: 分页大小
+     * @return newSql
+     */
+    public abstract String appendPagination(String oldSql, int pageNo, int pageSize);
 }
