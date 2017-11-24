@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class AbstractInterceptor {
+    private static final String JDK_PROXY_OBJECT_INVOCATION_HANDLER_FIELD_NAME = "h";
+    private static final String PLUGIN_TARGET_FIELD_NAME = "target";
+    
     /**
      * 获取被拦截的对象(MetaObject包装)
      * 通过JDK动态代理生成的动态代理类除了实现目标接口外还会继承{@link java.lang.reflect.Proxy},顺便从proxy中继承相应的字段
@@ -32,15 +35,15 @@ class AbstractInterceptor {
         ObjectWrapperFactory objectWrapperFactory = MetaObjectShared.OBJECT_WRAPPER_FACTORY;
         MetaObject metaObject = MetaObject.forObject(obj, objectFactory, objectWrapperFactory, MetaObjectShared.REFLECTOR_FACTORY);
         // 由于目标类可能被多个拦截器拦截，从而形成多次代理，通过以下循环找出原始代理
-        while (metaObject.hasGetter("h")) {
-            Object object = metaObject.getValue("h");
+        while (metaObject.hasGetter(JDK_PROXY_OBJECT_INVOCATION_HANDLER_FIELD_NAME)) {
+            Object object = metaObject.getValue(JDK_PROXY_OBJECT_INVOCATION_HANDLER_FIELD_NAME);
             metaObject = MetaObject.forObject(object, objectFactory, objectWrapperFactory, MetaObjectShared.REFLECTOR_FACTORY);
         }
         // 得到原始代理对象的目标类，即StatementHandler实现类
-        if (metaObject.hasGetter("target")) {
-            Object target = metaObject.getValue("target");
+        if (metaObject.hasGetter(PLUGIN_TARGET_FIELD_NAME)) {
+            Object target = metaObject.getValue(PLUGIN_TARGET_FIELD_NAME);
             metaObject = MetaObject.forObject(target, objectFactory, objectWrapperFactory, MetaObjectShared.REFLECTOR_FACTORY);
-            if (metaObject.hasGetter("h")) {
+            if (metaObject.hasGetter(JDK_PROXY_OBJECT_INVOCATION_HANDLER_FIELD_NAME)) {
                 return getMetaObject(target);
             }
         }

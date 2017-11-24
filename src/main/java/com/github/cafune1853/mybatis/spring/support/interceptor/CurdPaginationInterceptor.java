@@ -66,9 +66,11 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
         if (mapperMethodMeta.isAppendClazzAsArg()) {
             Object arg = args[1];
             if (arg != null) {
-                Map<String, Object> argMap = null;
+                Map<String, Object> argMap;
                 if (arg instanceof Map) {
-                    argMap = (Map<String, Object>) arg;
+                    @SuppressWarnings("unchecked")
+                    Map<String,Object> tmpMap = (Map<String, Object>) arg;
+                    argMap = tmpMap;
                     argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
                 } else {
                     argMap = new HashMap<>(2);
@@ -113,7 +115,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
         }
     }
 
-    // TODO:暂不支持@Param("alias") Map 形式的mapper方法。
+    // XXX:暂不支持@Param("alias") Map 形式的mapper方法。
     private Optional<Page> getPageParam(Object parameterObject) {
         if (parameterObject instanceof Page) {
             return Optional.of((Page) parameterObject);
@@ -139,7 +141,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
             stop = sqlLower.length();
         }
 
-        String countSql = "select count(0) " + boundSql.getSql().substring(start, stop);
+        String countSql = "select count(*) " + boundSql.getSql().substring(start, stop);
         BoundSql countBoundSql = new BoundSql(ms.getConfiguration(), countSql, boundSql.getParameterMappings(), boundSql.getParameterObject());
         ParameterHandler parameterHandler = new DefaultParameterHandler(ms, boundSql.getParameterObject(), countBoundSql);
         try (PreparedStatement stmt = conn.prepareStatement(countSql)) {
