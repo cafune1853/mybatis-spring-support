@@ -3,7 +3,7 @@ package com.github.cafune1853.mybatis.support.util;
 /**
  * @author doggy1853
  */
-public class StringUtil {
+public class StringUtils {
 
     /**
      * 将驼峰式字符串转换成下划线形式，如camelCase -> camel_case, HTTPStatus -> http_status, personIDs -> person_i_ds

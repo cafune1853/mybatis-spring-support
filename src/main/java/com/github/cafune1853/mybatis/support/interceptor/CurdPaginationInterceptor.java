@@ -11,13 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.github.cafune1853.mybatis.support.config.DBConfig;
-import com.github.cafune1853.mybatis.support.constant.DBType;
-import com.github.cafune1853.mybatis.support.meta.MapperMethodMeta;
-import com.github.cafune1853.mybatis.support.meta.MapperMethodMetaFactory;
-import com.github.cafune1853.mybatis.support.pagination.Page;
-import com.github.cafune1853.mybatis.support.provider.CurdProvider;
-import com.github.cafune1853.mybatis.support.util.ReflectUtil;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -29,6 +22,15 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+
+import com.github.cafune1853.mybatis.support.config.DBConfig;
+import com.github.cafune1853.mybatis.support.constant.DBType;
+import com.github.cafune1853.mybatis.support.meta.MapperMethodMeta;
+import com.github.cafune1853.mybatis.support.meta.MapperMethodMetaFactory;
+import com.github.cafune1853.mybatis.support.pagination.Page;
+import com.github.cafune1853.mybatis.support.provider.CurdProvider;
+import com.github.cafune1853.mybatis.support.util.ReflectUtil;
+import com.github.cafune1853.mybatis.support.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,7 +70,7 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
                 Map<String, Object> argMap;
                 if (arg instanceof Map) {
                     @SuppressWarnings("unchecked")
-                    Map<String,Object> tmpMap = (Map<String, Object>) arg;
+                    Map<String, Object> tmpMap = (Map<String, Object>) arg;
                     argMap = tmpMap;
                     argMap.put(CurdProvider.CLASS_KEY, mapperMethodMeta.getEntityClazz());
                 } else {
@@ -164,6 +166,15 @@ public class CurdPaginationInterceptor extends AbstractInterceptor implements In
     @Override
     public void setProperties(Properties properties) {
         String dialect = properties.getProperty("dialect");
-        DBConfig.configDbType(DBType.getByDialect(dialect));
+        if (!StringUtils.isNullOrEmpty(dialect)) {
+            DBConfig.configDbType(DBType.getByDialect(dialect));
+        }
+        String manualUpdateGmtModified = properties.getProperty("manualUpdateGmtModified");
+        if(!StringUtils.isNullOrEmpty(manualUpdateGmtModified)){
+            if("true".equalsIgnoreCase(manualUpdateGmtModified.trim())){
+                DBConfig.configManualUpdateGmtModified(true);
+            }
+        }
+
     }
 }

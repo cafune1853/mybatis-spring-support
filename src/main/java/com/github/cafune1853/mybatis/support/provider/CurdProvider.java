@@ -6,12 +6,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import com.github.cafune1853.mybatis.support.exception.AllEntityFieldIsNullException;
-import com.github.cafune1853.mybatis.support.meta.EntityMeta;
 import org.apache.ibatis.jdbc.SQL;
 
 import com.github.cafune1853.mybatis.support.config.DBConfig;
 import com.github.cafune1853.mybatis.support.mapper.ICurdMapper;
+import com.github.cafune1853.mybatis.support.meta.EntityMeta;
 import com.github.cafune1853.mybatis.support.meta.EntityMetaFactory;
 
 import lombok.extern.slf4j.Slf4j;
@@ -30,56 +29,18 @@ public class CurdProvider {
     private static final String GROUP_KEY = "groupBy";
 
     /**
-     * 将id列表快速转换成字符串形式，对于基本数值类型Long/Integer以及String类型进行快速处理，避免还需要通过PrepareStatement进行参数处理。
-     */
-    private static String handleIdList(List<?> objects, String paramName) {
-        char separator = ',';
-        StringBuilder sb = new StringBuilder();
-        if (objects.get(0) instanceof Long || objects.get(0) instanceof Integer) {
-            for (int i = 0; i < objects.size() - 1; i++) {
-                sb.append(objects.get(i));
-                sb.append(separator);
-            }
-            sb.append(objects.get(objects.size() - 1));
-        } else if (objects.get(0) instanceof String) {
-            for (int i = 0; i < objects.size() - 1; i++) {
-                sb.append('\'');
-                sb.append(objects.get(i));
-                sb.append('\'');
-                sb.append(separator);
-            }
-            sb.append('\'');
-            sb.append(objects.get(objects.size() - 1));
-            sb.append('\'');
-        } else {
-            for (int i = 0; i < objects.size() - 1; i++) {
-                sb.append("#{");
-                sb.append(paramName);
-                sb.append("[");
-                sb.append(i);
-                sb.append("]}");
-                sb.append(separator);
-            }
-            sb.append("#{");
-            sb.append(paramName);
-            sb.append("[");
-            sb.append(objects.size() - 1);
-            sb.append("]}");
-        }
-        return sb.toString();
-    }
-
-    /**
      * @see ICurdMapper#insert(Object)
      * @see ICurdMapper#insertAndSetObjectId(Object)
      * @param entity: 实体对象
      */
     public String insert(Object entity) {
         EntityMeta meta = EntityMetaFactory.getEntityMeta(entity.getClass());
-        StringBuilder names = new StringBuilder(), values = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        StringBuilder values = new StringBuilder();
         int i = 0;
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
-            if (isNull(kv.getValue(), entity)) {
+            boolean isNeedToFilter = isNull(kv.getValue(), entity) || isNeedToFilterOnInsert(kv.getKey());
+            if (isNeedToFilter) {
                 continue;
             }
             if (i++ != 0) {
@@ -104,7 +65,8 @@ public class CurdProvider {
         StringBuilder setting = new StringBuilder(32);
         int i = 0;
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
-            if (isNull(kv.getValue(), entity) || kv.getKey().equals(meta.getIdColumnName())) {
+            boolean isNeedToFilter = isNull(kv.getValue(), entity) || kv.getKey().equals(meta.getIdColumnName()) || isNeedToFilterOnUpdate(kv.getKey());
+            if (isNeedToFilter) {
                 continue;
             }
 
@@ -130,12 +92,13 @@ public class CurdProvider {
      * @see ICurdMapper#listByEntity(Object)
      */
     @SuppressWarnings("Duplicates")
-    public String listByEntity(final Object obj) {
-        Class<?> clazz = obj.getClass();
+    public String listByEntity(final Object entity) {
+        Class<?> clazz = entity.getClass();
         EntityMeta meta = EntityMetaFactory.getEntityMeta(clazz);
         StringBuilder where = new StringBuilder();
         for (Map.Entry<String, Field> kv : meta.getColumnFieldMaps().entrySet()) {
-            if (isNull(kv.getValue(), obj)) {
+            boolean isNeedToFilter = isNull(kv.getValue(), entity) || isNeedToFilterOnSearchCondition(kv.getKey());
+            if (isNeedToFilter) {
                 continue;
             }
             where.append(getLeftIdentifierQuote()).append(kv.getKey()).append(getRightIdentifierQuote()).append("=#{").append(kv.getValue().getName()).append("} AND ");
@@ -143,12 +106,12 @@ public class CurdProvider {
         int index = where.lastIndexOf(" AND");
         if (index <= 0) {
             //在所有域为空的情况下，相当于没有查询到数据
-            return new SQL().SELECT("1").FROM(getTableName(meta, obj)).WHERE("false").toString();
-        }else {
+            return new SQL().SELECT("1").FROM(getTableName(meta, entity)).WHERE("false").toString();
+        } else {
             where.setLength(index);
         }
 
-        return new SQL().SELECT("*").FROM(getTableName(meta, obj)).WHERE(where.toString()).toString();
+        return new SQL().SELECT("*").FROM(getTableName(meta, entity)).WHERE(where.toString()).toString();
     }
 
     /**
@@ -168,27 +131,29 @@ public class CurdProvider {
     /**
      * @see ICurdMapper#deleteByEntity(Object)
      */
-    public String deleteByEntity(final Object obj) {
-        final EntityMeta meta = EntityMetaFactory.getEntityMeta(obj.getClass());
+    public String deleteByEntity(final Object entity) {
+        final EntityMeta meta = EntityMetaFactory.getEntityMeta(entity.getClass());
         StringBuilder equalConditionBuilder = new StringBuilder();
         meta.getColumnFieldMaps().forEach((c, f) -> {
-            if(!isNull(f, obj)){
-                equalConditionBuilder.append(getLeftIdentifierQuote());
-                equalConditionBuilder.append(c);
-                equalConditionBuilder.append(getRightIdentifierQuote());
-                equalConditionBuilder.append("=#{");
-                equalConditionBuilder.append(f.getName());
-                equalConditionBuilder.append("}");
-                equalConditionBuilder.append(" and ");
+            boolean isNeedToFilter = isNull(f, entity) || isNeedToFilterOnSearchCondition(c);
+            if (isNeedToFilter) {
+                return;
             }
+            equalConditionBuilder.append(getLeftIdentifierQuote());
+            equalConditionBuilder.append(c);
+            equalConditionBuilder.append(getRightIdentifierQuote());
+            equalConditionBuilder.append("=#{");
+            equalConditionBuilder.append(f.getName());
+            equalConditionBuilder.append("}");
+            equalConditionBuilder.append(" and ");
         });
-        if(equalConditionBuilder.length() == 0){
+        if (equalConditionBuilder.length() == 0) {
             // 无非空域，则认为不影响任何列
-            return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE("false").toString();
-        }else{
+            return new SQL().DELETE_FROM(getTableName(meta, entity)).WHERE("false").toString();
+        } else {
             equalConditionBuilder.setLength(equalConditionBuilder.length() - 5);
         }
-        return new SQL().DELETE_FROM(getTableName(meta, obj)).WHERE(equalConditionBuilder.toString()).toString();
+        return new SQL().DELETE_FROM(getTableName(meta, entity)).WHERE(equalConditionBuilder.toString()).toString();
     }
 
     /**
@@ -240,5 +205,65 @@ public class CurdProvider {
 
     private char getRightIdentifierQuote() {
         return DBConfig.getInstance().getDbType().getRightIdentifierQuote();
+    }
+
+    private boolean isNeedToFilterOnUpdate(String columnName) {
+        if (SqlProviderConstants.GMT_CREATE_COLUMN_NAME.equals(columnName)) {
+            return true;
+        }
+        if (SqlProviderConstants.GMT_MODIFIED_COLUMN_NAME.equals(columnName)) {
+            if (!DBConfig.getInstance().isManualUpdateGmtModified()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNeedToFilterOnInsert(String columnName) {
+        return SqlProviderConstants.GMT_CREATE_COLUMN_NAME.equals(columnName) || SqlProviderConstants.GMT_MODIFIED_COLUMN_NAME.equals(columnName);
+    }
+
+    private boolean isNeedToFilterOnSearchCondition(String columnName) {
+        return SqlProviderConstants.GMT_CREATE_COLUMN_NAME.equals(columnName) || SqlProviderConstants.GMT_MODIFIED_COLUMN_NAME.equals(columnName);
+    }
+    
+    /**
+     * 将id列表快速转换成字符串形式，对于基本数值类型Long/Integer以及String类型进行快速处理，避免还需要通过PrepareStatement进行参数处理。
+     */
+    private static String handleIdList(List<?> objects, String paramName) {
+        char separator = ',';
+        StringBuilder sb = new StringBuilder();
+        if (objects.get(0) instanceof Long || objects.get(0) instanceof Integer) {
+            for (int i = 0; i < objects.size() - 1; i++) {
+                sb.append(objects.get(i));
+                sb.append(separator);
+            }
+            sb.append(objects.get(objects.size() - 1));
+        } else if (objects.get(0) instanceof String) {
+            for (int i = 0; i < objects.size() - 1; i++) {
+                sb.append('\'');
+                sb.append(objects.get(i));
+                sb.append('\'');
+                sb.append(separator);
+            }
+            sb.append('\'');
+            sb.append(objects.get(objects.size() - 1));
+            sb.append('\'');
+        } else {
+            for (int i = 0; i < objects.size() - 1; i++) {
+                sb.append("#{");
+                sb.append(paramName);
+                sb.append("[");
+                sb.append(i);
+                sb.append("]}");
+                sb.append(separator);
+            }
+            sb.append("#{");
+            sb.append(paramName);
+            sb.append("[");
+            sb.append(objects.size() - 1);
+            sb.append("]}");
+        }
+        return sb.toString();
     }
 }

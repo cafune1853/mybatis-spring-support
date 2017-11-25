@@ -11,7 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import com.github.cafune1853.mybatis.support.util.StringUtil;
+import com.github.cafune1853.mybatis.support.util.StringUtils;
 
 /**
  * @author huangzhw
@@ -47,7 +47,7 @@ public class EntityMetaFactory {
                     if (columnName == null) {
                         columnName = field.getName();
                     }
-                    columnName = StringUtil.camelCaseToUnderScore(columnName);
+                    columnName = StringUtils.camelCaseToUnderScore(columnName);
                     if (columnName.contains("$")) {
                         continue;
                     }
@@ -76,7 +76,7 @@ public class EntityMetaFactory {
         if (tableName == null || tableName.trim().isEmpty()) {
             tableName = entityClazz.getSimpleName();
         }
-        return StringUtil.camelCaseToUnderScore(tableName);
+        return StringUtils.camelCaseToUnderScore(tableName);
     }
 
     private static class EntityAnalyzeResult {
