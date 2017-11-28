@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.github.cafune1853.mybatis.support.util.StringUtil;
+import com.github.cafune1853.mybatis.support.util.StringUtils;
 
 import lombok.Getter;
 
@@ -65,7 +65,7 @@ public enum DBType {
     }
 
     public static DBType getByDialect(String dialect) {
-        if (StringUtil.isNullOrEmpty(dialect)) {
+        if (StringUtils.isNullOrEmpty(dialect)) {
             return MYSQL;
         }
         for (DBType dbType : DBType.values()) {

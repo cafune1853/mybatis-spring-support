@@ -10,10 +10,10 @@ import lombok.Data;
  * Created on 2017-11-20.
  * 这个类必须配合{@link CurdPaginationInterceptor} 一起使用
  */
-@Data
 public class DBConfig {
     private static final DBConfig INSTANCE = new DBConfig();
-    private volatile DBType dbType;
+    private volatile DBType dbType = DBType.MYSQL;
+    private volatile boolean manualUpdateGmtModified = false;
 
     private DBConfig() {
     }
@@ -23,7 +23,20 @@ public class DBConfig {
     }
 
     public static DBConfig configDbType(DBType dbType) {
-        INSTANCE.setDbType(dbType);
+        INSTANCE.dbType = dbType;
         return INSTANCE;
+    }
+    
+    public static DBConfig configManualUpdateGmtModified(boolean manualUpdateGmtModified){
+        INSTANCE.manualUpdateGmtModified = manualUpdateGmtModified;
+        return INSTANCE;
+    }
+    
+    public DBType getDbType() {
+        return dbType;
+    }
+    
+    public boolean isManualUpdateGmtModified() {
+        return manualUpdateGmtModified;
     }
 }

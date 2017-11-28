@@ -13,6 +13,9 @@
     <plugin interceptor="com.github.cafune1853.mybatis.spring.support.interceptor.CurdPaginationInterceptor">
       <!-- 配置方言，不指定则默认为mysql,可选参数为mysql|oracle|sqlserver|postgresql -->
       <property name="dialect" value="mysql"/> 
+      <!-- 是否手工更新gmtModified字段,默认为false,即采取数据库自动更新的方式(ON UPDATE/Trigger); 如果设置为true,且
+           update操作传入的BaseEntity#gmtModified非空,那么会更新该字段到数据库,推荐设为false,使用数据库自动更新的方式 -->
+      <property name="manualUpdateGmtModified">false</property>
     </plugin>
     ```
     使用Curd模板
