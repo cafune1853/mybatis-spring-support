@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="all">
+    <resultMap type="com.github.cafune1853.mybatis.support.test.entity.BlogWithAuthorDO" id="blogWithAuthor">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <association property="authorDO" columnPrefix="author_" javaType="com.github.cafune1853.mybatis.support.test.entity.AuthorDO">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="age" property="age"/>
+            <result column="sex" property="sex"/>
+            <result column="is_signed" property="signed"/>
+        </association>
+    </resultMap>
+</mapper>

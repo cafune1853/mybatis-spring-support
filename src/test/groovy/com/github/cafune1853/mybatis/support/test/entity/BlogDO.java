@@ -14,5 +14,5 @@ public class BlogDO extends BaseLongIdEntity{
 	@Column(name = "content")
 	private String content;
 	@Column(name = "author_id")
-	private String authorId;
+	private Long authorId;
 }

@@ -40,6 +40,10 @@
         <plugin interceptor="com.github.cafune1853.mybatis.support.interceptor.CurdPaginationInterceptor"/>
     </plugins>
 
+    <mappers>
+        <mapper resource="all-mapper.xml"/>
+    </mappers>
+
     <!-- Continue going here -->
 
 </configuration>
