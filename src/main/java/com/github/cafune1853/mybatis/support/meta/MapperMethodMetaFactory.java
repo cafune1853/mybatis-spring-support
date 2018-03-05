@@ -41,6 +41,8 @@ public class MapperMethodMetaFactory {
      */
     private static final Map<Class<?>, Class<?>> MAPPER_CLASS_ENTITY_CLASS_CACHE = new ConcurrentHashMap<>();
     private static final String DYNAMIC_GENERATE_MAPPER_ID_SUFFIX = ".GeneratedMapperIdSuffix";
+    
+    private MapperMethodMetaFactory(){}
 
     /**
      * MapperMethod即MapperStatement,通过该方法可以获得一个Mapper方法的元数据信息，在这里解析
