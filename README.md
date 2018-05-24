@@ -57,3 +57,6 @@
           }
       }
     ```
+    
+### 简易原理
+CurdPaginationInterceptor: Dao.proxyMethod -> Executor proxy -> Sql Provider.
