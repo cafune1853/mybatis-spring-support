@@ -59,4 +59,4 @@
     ```
     
 ### 简易原理
-CurdPaginationInterceptor: Dao.proxyMethod -> Executor proxy -> Sql Provider.
+CurdPaginationInterceptor: Dao.proxyMethod -> Executor proxy -> ProviderSqlSource.
